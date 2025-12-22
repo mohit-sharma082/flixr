@@ -99,7 +99,7 @@ export function Header() {
                         <div className='p-0.5 bg-foreground/60 rounded-lg'>
                             <Image
                                 src='/icon-512.png'
-                                alt='TMDB Logo'
+                                alt='Flixr Logo'
                                 width={28}
                                 height={28}
                             />

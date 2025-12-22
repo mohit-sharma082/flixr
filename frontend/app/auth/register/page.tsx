@@ -1,8 +1,8 @@
 import { AuthForm } from '@/components/auth-form';
 
 export const metadata = {
-    title: 'Create Account - TMDB Community',
-    description: 'Create a new TMDB Community account',
+    title: 'Create Account - Flixr Community',
+    description: 'Create a new Flixr Community account',
 };
 
 export default function RegisterPage() {

@@ -1,8 +1,8 @@
 import { AuthForm } from '@/components/auth-form';
 
 export const metadata = {
-    title: 'Sign In - TMDB Community',
-    description: 'Sign in to your TMDB Community account',
+    title: 'Sign In - Flixr Community',
+    description: 'Sign in to your Flixr Community account',
 };
 
 export default function LoginPage() {

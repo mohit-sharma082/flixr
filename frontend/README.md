@@ -1,6 +1,6 @@
-# TMDB Community Web
+# Flixr Community Web
 
-A Next.js frontend application for the TMDB Community API. Browse movies, read reviews, and engage with the community.
+A Next.js frontend application for the Flixr Community API. Browse movies, read reviews, and engage with the community.
 
 ## Setup
 

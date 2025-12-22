@@ -5,7 +5,7 @@ import { createServerApi } from '@/lib/api';
 import { Movie, TVShow } from '@/lib/interfaces';
 
 export const metadata = {
-    title: 'Home - TMDB Community',
+    title: 'Home - Flixr Community',
     description: 'Discover popular movies and read community reviews',
 };
 
@@ -37,7 +37,7 @@ export default async function HomePage() {
                 <div className='mb-8'>
                     <h1 className='text-3xl font-bold '>Popular Movies</h1>
                     <p className=' mt-2'>
-                        Discover what's popular in the TMDB community
+                        Discover what's popular in the Flixr community
                     </p>
                 </div>
 

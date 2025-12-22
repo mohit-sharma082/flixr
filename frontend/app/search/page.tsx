@@ -43,8 +43,8 @@ const getInitials = (name: string) => {
         .toUpperCase();
 };
 export const metadata = {
-    title: 'Search - TMDB Community',
-    description: 'Search for movies in the TMDB Community',
+    title: 'Search - Flixr Community',
+    description: 'Search for movies in the Flixr Community',
 };
 
 interface SearchPageProps {
