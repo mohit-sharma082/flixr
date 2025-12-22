@@ -1,5 +1,5 @@
 {
-    "name": "tmdb-community-backend",
+    "name": "flixr-backend",
     "version": "1.0.0",
     "main": "dist/server.js",
     "scripts": {
