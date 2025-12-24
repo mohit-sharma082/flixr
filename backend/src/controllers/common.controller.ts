@@ -21,19 +21,50 @@ export const search = async (req: Request, res: Response) => {
     return res.json(data);
 };
 
+
 export const trending = async (req: Request, res: Response) => {
-    const page = parsePage(req.query.page);
+    // const page = parsePage(req.query.page);
     const timeWindow: 'day' | 'week' =
         req.query.time_window === 'day' ? 'day' : 'week';
 
-    const [movies, tvs] = await Promise.allSettled([
-        tmdbClient.raw(TMDB_ROUTES.trending.movie(timeWindow), { page }),
-        tmdbClient.raw(TMDB_ROUTES.trending.tv(timeWindow), { page }),
+    const [movies1, movies2, tvs1, tvs2] = await Promise.allSettled([
+        tmdbClient.raw(TMDB_ROUTES.trending.movie(timeWindow), { page: 1 }),
+        tmdbClient.raw(TMDB_ROUTES.trending.movie(timeWindow), { page: 2 }),
+        tmdbClient.raw(TMDB_ROUTES.trending.tv(timeWindow), { page: 1 }),
+        tmdbClient.raw(TMDB_ROUTES.trending.tv(timeWindow), { page: 2 }),
     ]);
+
+    const allMovies: any = { results: [] };
+    if (movies1.status === 'fulfilled')
+        allMovies.results.push(...movies1.value.results);
+    if (movies2.status === 'fulfilled')
+        allMovies.results.push(...movies2.value.results);
+    const allTvs: any = { results: [] };
+    if (tvs1.status === 'fulfilled') allTvs.results.push(...tvs1.value.results);
+    if (tvs2.status === 'fulfilled') allTvs.results.push(...tvs2.value.results);
+
     return res.json({
         data: {
-            movies: movies.status === 'fulfilled' ? movies.value : null,
-            tvs: tvs.status === 'fulfilled' ? tvs.value : null,
+            movies: allMovies,
+            tvs: allTvs,
         },
     });
 };
+
+
+// export const trending = async (req: Request, res: Response) => {
+//     const page = parsePage(req.query.page);
+//     const timeWindow: 'day' | 'week' =
+//         req.query.time_window === 'day' ? 'day' : 'week';
+
+//     const [movies, tvs] = await Promise.allSettled([
+//         tmdbClient.raw(TMDB_ROUTES.trending.movie(timeWindow), { page }),
+//         tmdbClient.raw(TMDB_ROUTES.trending.tv(timeWindow), { page }),
+//     ]);
+//     return res.json({
+//         data: {
+//             movies: movies.status === 'fulfilled' ? movies.value : null,
+//             tvs: tvs.status === 'fulfilled' ? tvs.value : null,
+//         },
+//     });
+// };
