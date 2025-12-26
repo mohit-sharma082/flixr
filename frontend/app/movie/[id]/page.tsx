@@ -12,7 +12,7 @@ export default async function MovieDetailPage({
 
     const fetchMovieDetails = async () => {
         try {
-            if(isNaN(movieId)) {
+            if (isNaN(movieId)) {
                 throw new Error('Invalid movie ID');
             }
             const apiUrl =
@@ -33,7 +33,7 @@ export default async function MovieDetailPage({
 
     const movieData = await fetchMovieDetails();
 
-    if (!movieData) {
+    if (!movieData || !movieData?.movie) {
         return (
             <main>
                 <p className='text-center mt-20'>Movie not found.</p>
@@ -44,7 +44,10 @@ export default async function MovieDetailPage({
     return (
         <main>
             <Suspense fallback={<MovieDetailsSkeleton />}>
-                <MovieDetails movie={movieData} />
+                <MovieDetails
+                    movie={movieData?.movie}
+                    reviews={movieData?.reviews?.results ?? []}
+                />
             </Suspense>
         </main>
     );
