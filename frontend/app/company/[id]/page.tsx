@@ -18,7 +18,7 @@ interface CompanyDetails {
         headquarters: string;
         homepage: string;
         id: number;
-        logo_path: string | null;
+        logo_path?: string | null;
         name: string;
         origin_country: string;
         parent_company: CompanyDetails | null;
@@ -41,66 +41,73 @@ export default async function CompanyPage({
 }: {
     params: { id: string };
 }) {
-    const id = (await params).id;
-    const companyId = Number.parseInt(id as string, 10);
+    try {
+        const id = (await params).id;
+        const companyId = Number.parseInt(id as string, 10);
 
-    if (Number.isNaN(companyId)) {
-        return <EmptyState message='Invalid company ID.' />;
-    }
-
-    const fetchCompanyDetails = async () => {
-        try {
-            if (isNaN(companyId)) {
-                throw new Error('Invalid company ID');
-            }
-            const api = createServerApi();
-            const res = await api.get('/api/companies/' + companyId);
-            return res?.data?.data ?? res?.data ?? res;
-        } catch (error) {
-            console.error('Error fetching company details:', error);
-            return null;
+        if (Number.isNaN(companyId)) {
+            return <EmptyState message='Invalid company ID.' />;
         }
-    };
 
-    const company: CompanyDetails = await fetchCompanyDetails();
+        const fetchCompanyDetails = async () => {
+            try {
+                if (isNaN(companyId)) {
+                    throw new Error('Invalid company ID');
+                }
+                const api = createServerApi();
+                const res = await api.get('/api/companies/' + companyId);
+                return res?.data?.data ?? res?.data ?? res;
+            } catch (error) {
+                console.error('Error fetching company details:', error);
+                return null;
+            }
+        };
 
-    if (!company) {
-        return <EmptyState message='Company not found.' />;
+        const company: CompanyDetails = await fetchCompanyDetails();
+        console.log('Company Details:', company);
+
+        if (!company) {
+            return <EmptyState message='Company not found.' />;
+        }
+
+        return (
+            <main className='min-h-screen bg-background text-foreground'>
+                <div className='sticky top-0 z-40 bg-background/80 backdrop-blur-sm border-b border-border'>
+                    <div className='max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-3'>
+                        <Link href='/'>
+                            <Button variant='ghost' size='sm'>
+                                <ArrowLeft className='w-4 h-4 mr-2' />
+                                Back
+                            </Button>
+                        </Link>
+                    </div>
+                </div>
+
+                <div className='max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12'>
+                    <CompanyHeader company={company.details} />
+
+                    <div className='grid grid-cols-1 lg:grid-cols-3 gap-8 my-12'>
+                        <CompanyInfo company={company.details} />
+                    </div>
+
+                    {company.alternativeNames?.results &&
+                        company.alternativeNames.results.length > 0 && (
+                            <AlternativeNames
+                                names={company.alternativeNames.results}
+                            />
+                        )}
+
+                    {company.images?.logos &&
+                        company.images.logos.length > 0 && (
+                            <LogosGallery logos={company.images.logos} />
+                        )}
+                </div>
+            </main>
+        );
+    } catch (error: any) {
+        console.error('Error in CompanyPage:', error);
+        return <EmptyState message='An unexpected error occurred.' />;
     }
-
-    return (
-        <main className='min-h-screen bg-background text-foreground'>
-            <div className='sticky top-0 z-40 bg-background/80 backdrop-blur-sm border-b border-border'>
-                <div className='max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-3'>
-                    <Link href='/'>
-                        <Button variant='ghost' size='sm'>
-                            <ArrowLeft className='w-4 h-4 mr-2' />
-                            Back
-                        </Button>
-                    </Link>
-                </div>
-            </div>
-
-            <div className='max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12'>
-                <CompanyHeader company={company.details} />
-
-                <div className='grid grid-cols-1 lg:grid-cols-3 gap-8 my-12'>
-                    <CompanyInfo company={company.details} />
-                </div>
-
-                {company.alternativeNames?.results &&
-                    company.alternativeNames.results.length > 0 && (
-                        <AlternativeNames
-                            names={company.alternativeNames.results}
-                        />
-                    )}
-
-                {company.images?.logos && company.images.logos.length > 0 && (
-                    <LogosGallery logos={company.images.logos} />
-                )}
-            </div>
-        </main>
-    );
 }
 
 function EmptyState({ message }: { message: string }) {
@@ -146,7 +153,7 @@ function AlternativeNames({ names }: { names: AlternativeName[] }) {
 }
 
 interface CompanyDetailsData {
-    logo_path: string | null;
+    logo_path?: string | null;
     name: string;
     description: string;
     origin_country: string;
@@ -156,7 +163,7 @@ function CompanyHeader({ company }: { company: CompanyDetailsData }) {
     return (
         <div className='mb-12'>
             <div className='flex flex-col sm:flex-row items-start gap-8'>
-                {company.logo_path && (
+                {company?.logo_path && (
                     <div className='flex-shrink-0'>
                         <div className='w-24 h-24 bg-card rounded-lg overflow-hidden border border-border flex items-center justify-center p-2'>
                             <Image

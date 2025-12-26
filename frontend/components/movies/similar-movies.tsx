@@ -20,7 +20,7 @@ const SimilarMoviesSection = ({ movie }: MovieDetailsProps) => {
     const getSimilar = async () => {
         try {
             if (!movie.id) return [];
-            const api = createApi('http://192.168.81.126:4000');
+            const api = createApi();
             const res = await api.get('/api/movies/' + movie.id + '/similar');
             console.log({ res });
             return res?.data?.results ?? [];
