@@ -114,6 +114,13 @@ export const TMDB_ROUTES = {
             `/trending/tv/${timeWindow}`,
     },
 
+    companies: {
+        details: (id: number | string) => `/company/${id}`,
+        alternative_names: (id: number | string) =>
+            `/company/${id}/alternative_names`,
+        images: (id: number | string) => `/company/${id}/images`,
+    },
+
     // Misc
     configuration: () => `/configuration`,
     find: (externalId: string, externalSource: string) =>
@@ -156,13 +163,13 @@ export class TMDBClient {
     private async request(path: string, params: QueryParams = {}) {
         try {
             const url = `${this.baseUrl}${path}`;
-            console.log('TMDB Request URL: ', url, this.apiKey);
+            console.log('TMDB Request URL: ', url, params);
             const resp = await axios.get(url, {
-                params: { ...params, api_key: this.apiKey },
+                params: { ...params, api_key: this.apiKey, adult: false },
             });
 
             return resp.data;
-        } catch (error:any) {
+        } catch (error: any) {
             console.log('TMDB request error: ', error?.message ?? error);
             throw error;
         }
@@ -196,6 +203,7 @@ export class TMDBClient {
     // Expose a direct request in case controller needs a specific endpoint
     async raw(path: string, params: QueryParams = {}) {
         try {
+            // console.log('TMDB Raw Request Path: ', path, params);
             const key = this.cacheKey(`raw:${path}:${JSON.stringify(params)}`);
             return this.getCached(key, () => this.request(path, params));
         } catch (error) {
