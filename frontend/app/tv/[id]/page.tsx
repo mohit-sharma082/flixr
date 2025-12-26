@@ -1,14 +1,16 @@
 // app/tv/[id]/page.tsx
 import React from 'react';
 import { TVDetails } from '@/components/tv/tv-details'; // adjust path if necessary
-import type { TVShow } from '@/lib/interfaces';
+import type { Review, TVShow } from '@/lib/interfaces';
 
 interface PageProps {
     params: { id: string };
     searchParams?: Record<string, string | string[] | undefined>;
 }
 
-async function getTVDetails(id: string): Promise<TVShow | null> {
+async function getTVDetails(
+    id: string
+): Promise<{ show: TVShow; reviews: { results: Review[] } } | null> {
     try {
         const apiBase =
             process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
@@ -25,7 +27,7 @@ async function getTVDetails(id: string): Promise<TVShow | null> {
             return null;
         }
         const data = await res.json();
-        return data as TVShow;
+        return data;
     } catch (err) {
         console.error('Error fetching TV details:', err);
         return null;
@@ -34,9 +36,9 @@ async function getTVDetails(id: string): Promise<TVShow | null> {
 
 export default async function TVPage({ params }: PageProps) {
     const { id } = await params;
-    const show = await getTVDetails(id);
+    const data = await getTVDetails(id);
 
-    if (!show) {
+    if (!data?.show) {
         return (
             <main className='min-h-screen flex items-center justify-center'>
                 <div className='text-center py-12'>
@@ -51,7 +53,7 @@ export default async function TVPage({ params }: PageProps) {
 
     return (
         <main>
-            <TVDetails show={show} />
+            <TVDetails show={data?.show} reviews={data?.reviews?.results} />
         </main>
     );
 }
