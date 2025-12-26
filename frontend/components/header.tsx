@@ -53,6 +53,7 @@ export function Header() {
         '/movie',
         '/tv',
         '/person',
+        '/company'
     ];
 
     // const searchTimeoutRef = useRef<NodeJS.Timeout>()
