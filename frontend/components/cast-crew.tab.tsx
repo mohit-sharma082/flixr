@@ -8,11 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import { Film, User2, Award } from 'lucide-react';
 import Link from 'next/link';
 
-const CastAndCrewTab = ({ movie }: { movie: Movie }) => {
-    const credits = useMemo(
-        () => movie?.credits ?? { crew: [], cast: [] },
-        [movie]
-    );
+const CastAndCrewTab = ({ credits: CREDITS }: { credits: Credits }) => {
+    const credits = useMemo(() => CREDITS ?? { crew: [], cast: [] }, [CREDITS]);
 
     // Group crew by department
     const crewByDepartment =
@@ -81,11 +78,9 @@ const CastAndCrewTab = ({ movie }: { movie: Movie }) => {
                 </div>
 
                 {credits.cast.length > 0 ? (
-                    <div className='flex  justify-between flex-wrap gap-6'>
-                        {credits.cast.map((person) => (
-                            <Link
-                                key={person.cast_id}
-                                href={`/person/${person.id}`}>
+                    <div className='flex  flex-wrap gap-4'>
+                        {credits.cast.map((person, i) => (
+                            <Link key={i} href={`/person/${person.id}`}>
                                 <div className='w-[120px] md:w-[150px] space-y-3'>
                                     <div className='overflow-hidden rounded-md'>
                                         <Avatar className='h-[120px] md:h-[150px] w-[120px] md:w-[150px] rounded-md'>

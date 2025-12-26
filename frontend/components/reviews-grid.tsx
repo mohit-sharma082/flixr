@@ -32,7 +32,7 @@ const ReviewsGrid = ({ reviews: REVIEWS }: { reviews: Review[] }) => {
     if (!reviews) return null;
     if (reviews.length === 0) return null;
     return (
-        <div>
+        <div className='bg-background'>
             <h2 className='text-2xl font-bold my-2'>
                 Reviews ({reviews?.length})
             </h2>

@@ -156,6 +156,8 @@ export interface TVShow {
         poster_path: string | null;
         season_number: number;
     }>;
+
+    credits?: Credits;
     spoken_languages: SpokenLanguage[];
     status: string;
     tagline: string | null;

@@ -25,9 +25,9 @@ import {
 import { cn } from '@/lib/utils';
 import { Movie, Review } from '@/lib/interfaces';
 
-import { CastAndCrewSkeleton } from './cast-crew.tab';
+import { CastAndCrewSkeleton } from '../cast-crew.tab';
 
-const CastAndCrewTab = lazy(() => import('./cast-crew.tab'));
+const CastAndCrewTab = lazy(() => import('../cast-crew.tab'));
 const MediaTab = lazy(() => import('./media.tab'));
 import SimilarMoviesSection from './similar-movies';
 import ReviewsGrid from '../reviews-grid';
@@ -465,7 +465,12 @@ export function MovieDetails({ movie, reviews }: MovieDetailsProps) {
                                 <TabsContent value='cast'>
                                     <Suspense
                                         fallback={<CastAndCrewSkeleton />}>
-                                        <CastAndCrewTab movie={movie} />
+                                        <CastAndCrewTab
+                                            credits={{
+                                                cast: movie.credits?.cast ?? [],
+                                                crew: movie.credits?.crew ?? [],
+                                            }}
+                                        />
                                     </Suspense>
                                 </TabsContent>
 

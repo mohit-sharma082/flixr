@@ -24,8 +24,8 @@ import {
 import { cn } from '@/lib/utils';
 import type { Review, TVShow } from '@/lib/interfaces';
 import ReviewsGrid from '../reviews-grid';
+import CastAndCrewTab, { CastAndCrewSkeleton } from '../cast-crew.tab';
 
-const CastAndCrewTab = () => <div />;
 const MediaTab = () => <div />;
 const SimilarShowsSection = () => <div />;
 
@@ -426,8 +426,13 @@ export function TVDetails({ show, reviews }: TVDetailsProps) {
 
                                 <TabsContent value='cast'>
                                     <Suspense
-                                        fallback={<div>Loading cast…</div>}>
-                                        <CastAndCrewTab />
+                                        fallback={<CastAndCrewSkeleton />}>
+                                        <CastAndCrewTab
+                                            credits={{
+                                                cast: show?.credits?.cast ?? [],
+                                                crew: show?.credits?.crew ?? [],
+                                            }}
+                                        />{' '}
                                     </Suspense>
                                 </TabsContent>
 
