@@ -51,6 +51,8 @@ export default async function TVPage({ params }: PageProps) {
         );
     }
 
+    // console.log('TV Show Data:', data);
+
     return (
         <main>
             <TVDetails show={data?.show} reviews={data?.reviews?.results} />

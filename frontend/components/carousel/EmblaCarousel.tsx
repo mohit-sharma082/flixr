@@ -158,7 +158,7 @@ const EmblaCarousel: React.FC<PropType> = (props) => {
                             : '/placeholder.svg';
                         const href =
                             item.mediaType === 'movie'
-                                ? `/movies/${item.id}`
+                                ? `/movie/${item.id}`
                                 : `/tv/${item.id}`;
                         return (
                             <div className={`embla__slide `} key={index}>
