@@ -10,6 +10,7 @@ import authRoutes from './routes/auth';
 import movieRoutes from './routes/movie';
 import peopleRoutes from './routes/people';
 import tvRoutes from './routes/tv.routes';
+import companyRoutes from './routes/company.routes';
 
 import reviewRoutes from './routes/review';
 import commentRoutes from './routes/comment.routes';
@@ -49,6 +50,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/movies', movieRoutes);
 app.use('/api/tv', tvRoutes);
 app.use('/api/people', peopleRoutes);
+
+app.use('/api/companies', companyRoutes);
 
 app.use('/api/common', commonRoutes);
 
