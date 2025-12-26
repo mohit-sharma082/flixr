@@ -22,6 +22,7 @@ router.get('/genres', asyncHandler(movieCtrl.genres));
 router.get('/:id', asyncHandler(movieCtrl.details));
 router.get('/:id/credits', asyncHandler(movieCtrl.credits));
 router.get('/:id/videos', asyncHandler(movieCtrl.videos));
+router.get('/:id/reviews', asyncHandler(movieCtrl.tmdbReviews));
 router.get('/:id/recommendations', asyncHandler(movieCtrl.recommendations));
 router.get('/:id/similar', asyncHandler(movieCtrl.similar));
 router.get('/:id/external_ids', asyncHandler(movieCtrl.externalIds));
