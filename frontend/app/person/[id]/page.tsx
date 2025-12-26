@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ExternalLink } from 'lucide-react';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface PersonPageProps {
     params: { id: string };
@@ -87,11 +88,120 @@ export default async function PersonPage({
     });
 
     return (
-        <main className='min-h-screen bg-background'>
+        <main className='max-h-screen bg-background'>
+            <section className='hidden md:block h-screen  m-0 p-0 w-screen  '>
+                <div className='container max-h-screen  mx-auto flex '>
+                    <div className='max-h-svh h-fit p-4 min-w-[300px] flex flex-col gap-4'>
+                        <div className='relative w-full  '>
+                            <Image
+                                src={imageUrl}
+                                alt={person.name}
+                                width={300}
+                                height={390}
+                                className='rounded-xl shadow-lg object-cover'
+                                priority
+                            />
+                        </div>
+                        <InfoCard
+                            label='Known For'
+                            value={person.known_for_department}
+                        />
+                        {person.place_of_birth && (
+                            <InfoCard
+                                label='Place of Birth'
+                                value={person.place_of_birth}
+                            />
+                        )}
+                        {person.birthday && (
+                            <InfoCard
+                                label='Birthday'
+                                value={new Date(person.birthday).toDateString()}
+                            />
+                        )}
+                        {person.deathday && (
+                            <InfoCard
+                                label='Died'
+                                value={new Date(person.deathday).toDateString()}
+                            />
+                        )}
+                        <InfoCard
+                            label='Popularity'
+                            value={person.popularity.toFixed(1)}
+                        />
+                    </div>
+                    <ScrollArea className='h-screen p-2 '>
+                        <div className='flex flex-col gap-6 justify-end  w-full'>
+                            <div className='bg-background pt-4 min-h-[410px] flex flex-col justify-end rounded'>
+                                <h1 className='text-4xl font-bold mb-2'>
+                                    {person.name}
+                                </h1>
+                                <div className='flex flex-wrap gap-2 mb-4'>
+                                    <Badge variant='secondary'>
+                                        {person.known_for_department}
+                                    </Badge>
+                                    {person.birthday && (
+                                        <Badge variant='outline'>
+                                            Born{' '}
+                                            {new Date(
+                                                person.birthday
+                                            ).getFullYear()}
+                                        </Badge>
+                                    )}
+                                </div>
+                                {person.also_known_as.length > 0 && (
+                                    <p className='text-sm text-muted-foreground'>
+                                        Also known as:{' '}
+                                        {person.also_known_as
+                                            .slice(0, 4)
+                                            .join(', ')}
+                                    </p>
+                                )}
+                                <SocialLinks ids={person.external_ids} />
+                            </div>
+                            <div className='space-y-6'>
+                                {/* BIOGRAPHY */}
+                                {person.biography && (
+                                    <section>
+                                        <h2 className='text-2xl font-semibold mb-2'>
+                                            Biography
+                                        </h2>
+                                        <div className=' pb-4 text-pretty leading-relaxed text-muted-foreground'>
+                                            {person.biography}
+                                        </div>
+                                    </section>
+                                )}
+
+                                {/* FILMOGRAPHY */}
+                                <section>
+                                    <h2 className='text-2xl font-semibold mb-2'>
+                                        Filmography
+                                    </h2>
+
+                                    {credits.length === 0 ? (
+                                        <p className='text-muted-foreground'>
+                                            No credits available.
+                                        </p>
+                                    ) : (
+                                        <div className='grid grid-cols-2  md:grid-cols-[repeat(auto-fill,minmax(250px,1fr))] gap-4'>
+                                            {credits.map((credit, i) => (
+                                                <CreditCard
+                                                    key={`${credit.id}-${credit.media_type}`}
+                                                    credit={credit}
+                                                    index={i}
+                                                />
+                                            ))}
+                                        </div>
+                                    )}
+                                </section>
+                            </div>
+                        </div>
+                    </ScrollArea>
+                </div>
+            </section>
             {/* HERO */}
-            <section className='relative border-b border-border'>
+            <section className='block md:hidden relative border-b border-border'>
                 <div className='container mx-auto px-4 py-10 grid grid-cols-1 md:grid-cols-[260px_1fr] gap-8'>
-                    <div className='relative w-full max-w-[260px] mx-auto md:mx-0'>
+                    <div className='relative w-full max-w-[260px] '>
                         <Image
                             src={imageUrl}
                             alt={person.name}
@@ -102,11 +212,10 @@ export default async function PersonPage({
                         />
                     </div>
 
-                    <div className='flex flex-col justify-end'>CreditCard
+                    <div className='flex flex-col justify-end'>
                         <h1 className='text-4xl font-bold mb-2'>
                             {person.name}
                         </h1>
-
                         <div className='flex flex-wrap gap-2 mb-4'>
                             <Badge variant='secondary'>
                                 {person.known_for_department}
@@ -118,21 +227,19 @@ export default async function PersonPage({
                                 </Badge>
                             )}
                         </div>
-
                         {person.also_known_as.length > 0 && (
                             <p className='text-sm text-muted-foreground'>
                                 Also known as:{' '}
                                 {person.also_known_as.slice(0, 4).join(', ')}
                             </p>
                         )}
-
                         <SocialLinks ids={person.external_ids} />
                     </div>
                 </div>
             </section>
 
             {/* CONTENT */}
-            <section className='container mx-auto px-4 py-10 grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-10'>
+            <section className='block md:hidden container mx-auto px-4 py-10 grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-10'>
                 {/* SIDEBAR */}
                 <aside className='space-y-6 lg:sticky lg:top-24 h-fit'>
                     <InfoCard
@@ -211,10 +318,8 @@ export default async function PersonPage({
 
 function InfoCard({ label, value }: { label: string; value: string }) {
     return (
-        <Card className='p-4'>
-            <p className='text-xs uppercase text-muted-foreground mb-1'>
-                {label}
-            </p>
+        <Card className='p-4 gap-4'>
+            <p className='text-xs uppercase text-muted-foreground'>{label}</p>
             <p className='font-medium'>{value}</p>
         </Card>
     );
@@ -273,7 +378,7 @@ function CreditCard({
     const image = credit.poster_path
         ? `https://image.tmdb.org/t/p/w300${credit.poster_path}`
         : '/placeholder.svg';
-    console.log('Rendering credit:', credit);
+    // console.log('Rendering credit:', credit);
 
     return (
         <Link key={index} href={`/${credit.media_type}/${credit.id}`}>
@@ -283,7 +388,7 @@ function CreditCard({
                     alt={title}
                     width={300}
                     height={400}
-                    className='object-cover'
+                    className='object-cover '
                 />
                 <div className='p-3'>
                     <p className='text-sm font-medium line-clamp-2'>{title}</p>
