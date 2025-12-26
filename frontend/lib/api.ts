@@ -67,7 +67,7 @@ export const ROUTES = {
         searchMulti: (q: string, page = 1) =>
             `${API_PREFIX}/common/search?q=${encodeURIComponent(
                 q
-            )}&page=${page}`,
+            )}`,
     },
 } as const;
 
