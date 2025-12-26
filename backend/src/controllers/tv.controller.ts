@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { tmdbClient } from '../services/tmdbClient';
+import { TMDB_ROUTES, tmdbClient } from '../services/tmdbClient';
 
 /**
  * TV controllers - thin logic, delegate TMDB fetch + caching to tmdbClient.
@@ -62,8 +62,14 @@ export const details = async (req: Request, res: Response) => {
     const append =
         (req.query.append as string) ||
         'credits,videos,recommendations,external_ids';
-    const data = await tmdbClient.getDetails('tv', id, append);
-    return res.json(data);
+    const [details, reviews] = await Promise.allSettled([
+        tmdbClient.getDetails('tv', id, append),
+        tmdbClient.raw(TMDB_ROUTES.tv.reviews(id)),
+    ]);
+    return res.json({
+        show: details.status === 'fulfilled' ? details.value : null,
+        reviews: reviews.status === 'fulfilled' ? reviews.value : null,
+    });
 };
 
 export const recommendations = async (req: Request, res: Response) => {

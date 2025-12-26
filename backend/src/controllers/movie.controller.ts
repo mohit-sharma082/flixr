@@ -19,6 +19,7 @@ import mongoose from 'mongoose';
  * - GET /:id (append_to_response optional)
  * - GET /:id/credits
  * - GET /:id/videos
+ * - GET /:id/reviews?page=
  * - GET /:id/recommendations?page=
  * - GET /:id/similar?page=
  * - GET /:id/external_ids
@@ -26,7 +27,7 @@ import mongoose from 'mongoose';
  * - GET /:id/aggregate  -> TMDB details + community rating + sample reviews
  */
 
-const ROUTES = TMDB_ROUTES.movies
+const ROUTES = TMDB_ROUTES.movies;
 
 function parsePage(q: any) {
     const p = +(q || 1);
@@ -114,9 +115,24 @@ export const details = async (req: Request, res: Response) => {
     const { id } = req.params;
     if (!id) return res.status(400).json({ error: 'Missing movie id' });
     const append = (req.query.append as string) || 'credits,videos,images';
-    const data = await tmdbClient.getDetails('movie', id, append);
-    return res.json(data);
+
+    const [movie, reviews] = await Promise.allSettled([
+        tmdbClient.getDetails('movie', id, append),
+        tmdbClient.raw(ROUTES.reviews(id), { page: 1 }),
+    ]);
+
+    return res.json({
+        movie: movie.status === 'fulfilled' ? movie.value : null,
+        reviews: reviews.status === 'fulfilled' ? reviews.value : null,
+    });
 };
+
+export const tmdbReviews = async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const page = parsePage(req.query.page) ?? 1;
+    const data = await tmdbClient.raw(ROUTES.reviews(id), { page });
+    return res.json(data);
+}
 
 export const credits = async (req: Request, res: Response) => {
     const { id } = req.params;
