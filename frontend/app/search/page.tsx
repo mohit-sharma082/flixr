@@ -8,7 +8,7 @@ import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 const getProfileUrl = (path: string | null) => {
-    return path ? `https://image.tmdb.org/t/p/w185${path}` : null;
+    return path ? `https://image.tmdb.org/t/p/w200${path}` : null;
 };
 
 const colorByIndex = (
