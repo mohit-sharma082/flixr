@@ -20,7 +20,6 @@ const jetBrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
     title: 'Flixr Community',
     description: 'Community reviews and discussions about your favorite movies',
-    generator: 'v0.app',
     icons: ['/favicon.ico'],
 };
 

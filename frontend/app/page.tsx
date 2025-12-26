@@ -5,12 +5,11 @@ import { createServerApi } from '@/lib/api';
 import { Movie, TVShow } from '@/lib/interfaces';
 
 export const metadata = {
-    title: 'Home - Flixr Community',
+    title: 'Home | Flixr',
     description: 'Discover popular movies and read community reviews',
 };
 
-
-async function getPopularMovies(): Promise<[Movie[], TVShow[]]> {
+async function getTrendingItems(): Promise<[Movie[], TVShow[]]> {
     try {
         const api = createServerApi(process.env.NEXT_PUBLIC_API_URL);
         const resp = await api.get('/api/common/trending');
@@ -26,7 +25,7 @@ async function getPopularMovies(): Promise<[Movie[], TVShow[]]> {
 }
 
 export default async function HomePage() {
-    const [movies, shows] = await getPopularMovies();
+    const [movies, shows] = await getTrendingItems();
     // console.log('GOT :', { movies, shows });
 
     return (
@@ -50,7 +49,7 @@ export default async function HomePage() {
                     <p className=' mt-2'></p>
                 </div>
 
-                <div className='grid grid-cols-2 gap-4 sm:grid-cols-2  md:grid-cols-[repeat(auto-fill,minmax(280px,1fr))]'>
+                <div className='grid grid-cols-2 gap-4 sm:grid-cols-2  md:grid-cols-[repeat(auto-fill,minmax(320px,1fr))]'>
                     {shows?.map((show, i) => (
                         <TvShowCard index={i} key={i || show.id} show={show} />
                     ))}
