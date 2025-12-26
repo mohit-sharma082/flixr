@@ -4,6 +4,8 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ExternalLink } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { ImageItem } from '@/lib/interfaces';
+import { cn } from '@/lib/utils';
 
 interface PersonPageProps {
     params: { id: string };
@@ -38,6 +40,29 @@ interface PersonData {
             vote_average: number;
             media_type: 'movie' | 'tv';
         }>;
+        crew: Array<{
+            id: number;
+            title?: string;
+            overview?: string;
+            original_title?: string;
+            original_language?: string;
+            popularity?: number;
+            genre_ids?: number[];
+            poster_path: string | null;
+            backdrop_path?: string | null;
+
+            department?: string;
+            job?: string;
+            release_date?: string;
+            first_air_date?: string;
+            vote_average: number;
+            vote_count: number;
+            media_type: 'movie' | 'tv';
+            adult?: boolean;
+        }>;
+    };
+    images?: {
+        profiles?: Array<ImageItem>;
     };
 }
 
@@ -64,7 +89,6 @@ export default async function PersonPage({
             }
 
             const data: PersonData = await response.json();
-            console.log('Fetched person data:', data);
             return data;
         } catch (error) {
             console.error('Error fetching person details:', error);
@@ -73,6 +97,8 @@ export default async function PersonPage({
     };
 
     const person = await fetchPersonDetails();
+    // console.log('Fetched person data:', person);
+
     if (!person) {
         return <EmptyState message='Person not found.' />;
     }
@@ -86,12 +112,23 @@ export default async function PersonPage({
         const dateB = b.release_date || b.first_air_date || '';
         return dateB.localeCompare(dateA);
     });
+    const images = person.images?.profiles || [];
 
     return (
         <main className='max-h-screen bg-background'>
-            <section className='hidden md:block h-screen  m-0 p-0 w-screen  '>
-                <div className='container max-h-screen  mx-auto flex '>
-                    <div className='max-h-svh h-fit p-4 min-w-[300px] flex flex-col gap-4'>
+            <div className='absolute z-0 top-0 left-0 w-screen h-screen'>
+                <Image
+                    src={imageUrl}
+                    alt={person.name}
+                    fill
+                    className='object-cover rounded opacity-20'
+                />
+                <div className='absolute top-0 left-0 w-full h-full bg-gradient-to-b from-transparent  to-background' />
+                <div className='absolute top-0 left-0 w-full h-full bg-gradient-to-r from-background via-transparent to-background' />
+            </div>
+            <section className=' hidden md:block h-screen  m-0 p-0 w-screen  z-10'>
+                <div className='z-10 container max-h-screen  mx-auto flex '>
+                    <div className='z-10 max-h-svh h-fit p-4 min-w-[300px] flex flex-col gap-4'>
                         <div className='relative w-full  '>
                             <Image
                                 src={imageUrl}
@@ -131,7 +168,17 @@ export default async function PersonPage({
                     </div>
                     <ScrollArea className='h-screen p-2 '>
                         <div className='flex flex-col gap-6 justify-end  w-full'>
-                            <div className='bg-background pt-4 min-h-[410px] flex flex-col justify-end rounded'>
+                            {/* <div className='absolute z-0 top-0 left-0 w-full h-full'>
+                                <Image
+                                    src={imageUrl}
+                                    alt={person.name}
+                                    fill
+                                    className='object-cover rounded opacity-10'
+                                />
+                                <div className='absolute top-0 left-0 w-full h-full bg-gradient-to-b from-transparent  to-background' />
+                                <div className='absolute top-0 left-0 w-full h-full bg-gradient-to-r from-background via-transparent to-background' />
+                            </div> */}
+                            <div className=' pt-4 min-h-[410px] flex flex-col justify-end rounded'>
                                 <h1 className='text-4xl font-bold mb-2'>
                                     {person.name}
                                 </h1>
@@ -158,18 +205,59 @@ export default async function PersonPage({
                                 )}
                                 <SocialLinks ids={person.external_ids} />
                             </div>
-                            <div className='space-y-6'>
+                            <div className=' space-y-4'>
                                 {/* BIOGRAPHY */}
-                                {person.biography && (
-                                    <section>
-                                        <h2 className='text-2xl font-semibold mb-2'>
-                                            Biography
-                                        </h2>
-                                        <div className=' pb-4 text-pretty leading-relaxed text-muted-foreground'>
-                                            {person.biography}
-                                        </div>
-                                    </section>
-                                )}
+                                <div
+                                    className={cn('', {
+                                        'xl:grid items-stretch xl:grid-cols-3 gap-4':
+                                            images.length > 0,
+                                    })}>
+                                    {person.biography && (
+                                        <section className='col-span-2'>
+                                            <h2 className='text-2xl font-semibold mb-2'>
+                                                Biography
+                                            </h2>
+                                            <div className=' pb-4 text-pretty leading-relaxed text-muted-foreground'>
+                                                {person.biography}
+                                            </div>
+                                        </section>
+                                    )}
+                                    {/* IMAGES */}
+                                    {images?.length <= 0 ? null : (
+                                        <section className='xl:col-span-1 w-full '>
+                                            <h2 className='text-2xl font-semibold mb-2'>
+                                                Images ({images?.length})
+                                            </h2>
+                                            <div className='grid w-full grid-cols-3 gap-4 max-h-[40vh] overflow-y-scroll'>
+                                                {images.map((image, i) => {
+                                                    return (
+                                                        <div
+                                                            key={i}
+                                                            className={
+                                                                'border rounded relative aspect-square'
+                                                            }>
+                                                            <Image
+                                                                loading='lazy'
+                                                                src={
+                                                                    'https://image.tmdb.org/t/p/w300' +
+                                                                    image.file_path
+                                                                }
+                                                                alt={`${
+                                                                    person.name
+                                                                } image ${
+                                                                    i + 1
+                                                                }`}
+                                                                fill
+                                                                className='object-cover w-full h-full rounded'
+                                                            />
+                                                        </div>
+                                                    );
+                                                })}
+                                                <div className='h-10'></div>
+                                            </div>
+                                        </section>
+                                    )}
+                                </div>
 
                                 {/* FILMOGRAPHY */}
                                 <section>
@@ -199,9 +287,9 @@ export default async function PersonPage({
                 </div>
             </section>
             {/* HERO */}
-            <section className='block md:hidden relative border-b border-border'>
+            <section className='z-10 block md:hidden relative border-b border-border'>
                 <div className='container mx-auto px-4 py-10 grid grid-cols-1 md:grid-cols-[260px_1fr] gap-8'>
-                    <div className='relative w-full max-w-[260px] '>
+                    <div className='z-10 relative w-full max-w-[260px] '>
                         <Image
                             src={imageUrl}
                             alt={person.name}
@@ -239,9 +327,9 @@ export default async function PersonPage({
             </section>
 
             {/* CONTENT */}
-            <section className='block md:hidden container mx-auto px-4 py-10 grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-10'>
+            <section className='z-10 block md:hidden container mx-auto px-4 py-10 grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-10'>
                 {/* SIDEBAR */}
-                <aside className='space-y-6 lg:sticky lg:top-24 h-fit'>
+                <aside className='z-10  space-y-6 lg:sticky lg:top-24 h-fit'>
                     <InfoCard
                         label='Known For'
                         value={person.known_for_department}
@@ -281,6 +369,37 @@ export default async function PersonPage({
                             <Card className='p-6 leading-relaxed text-muted-foreground'>
                                 {person.biography}
                             </Card>
+                        </section>
+                    )}
+                    {images?.length <= 0 ? null : (
+                        <section>
+                            <h2 className='text-2xl font-semibold mb-2'>
+                                Images ({images?.length})
+                            </h2>
+                            <div className='grid grid-cols-[repeat(auto-fill,minmax(80px,1fr))] gap-4 lg:max-h-[40vh] overflow-y-scroll'>
+                                {images.map((image, i) => {
+                                    return (
+                                        <div
+                                            key={i}
+                                            className={
+                                                'border rounded relative aspect-square'
+                                            }>
+                                            <Image
+                                                loading='lazy'
+                                                src={
+                                                    'https://image.tmdb.org/t/p/w300' +
+                                                    image.file_path
+                                                }
+                                                alt={`${person.name} image ${
+                                                    i + 1
+                                                }`}
+                                                fill
+                                                className='object-cover w-full h-full rounded'
+                                            />
+                                        </div>
+                                    );
+                                })}
+                            </div>
                         </section>
                     )}
 
