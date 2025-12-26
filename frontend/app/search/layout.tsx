@@ -27,9 +27,16 @@ export default function RootLayout({
 
 const SearchSkeleton = () => {
     return (
-        <div className='animate-pulse space-y-4'>
-            <div className='h-8 bg-gray-300 rounded w-3/4 mx-auto'></div>
-            <div className='h-48 bg-gray-300 rounded w-full'></div>
+        <div className='animate-pulse space-y-4 p-4'>
+            <div className='h-10 bg-foreground/10 rounded w-3/4 '></div>
+            <div className='h-4 bg-foreground/10 rounded w-24 '></div>
+            <div className='grid grid-cols-[repeat(auto-fill,minmax(250px,1fr))] gap-4'>
+                {Array.from({ length: 8 }).map((_, index) => (
+                    <div
+                        key={index}
+                        className='aspect-[0.7] bg-foreground/10 rounded w-full'></div>
+                ))}
+            </div>
         </div>
     );
 };

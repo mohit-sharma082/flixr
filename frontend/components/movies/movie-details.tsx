@@ -331,12 +331,12 @@ export function MovieDetails({ movie, reviews }: MovieDetailsProps) {
 
                                     <Separator />
 
-                                    <div>
+                                    <div className='relative '>
                                         <h2 className='text-2xl font-bold mb-4'>
                                             Details
                                         </h2>
-                                        <div className='flex justify-between items-start '>
-                                            <dl className='grid grid-cols-1 sm:grid-cols-2 gap-4 '>
+                                        <div className='z-10 flex justify-between items-start '>
+                                            <dl className='z-10 grid grid-cols-1 sm:grid-cols-2 gap-4 '>
                                                 <div>
                                                     <dt className='text-sm font-medium text-muted-foreground'>
                                                         Original Title
@@ -408,46 +408,8 @@ export function MovieDetails({ movie, reviews }: MovieDetailsProps) {
                                                         /10
                                                     </dd>
                                                 </div>
-                                                <div>
-                                                    <dt className='text-sm font-medium text-muted-foreground'>
-                                                        Production Companies
-                                                    </dt>
-                                                    {/* <dd className='text-base flex flex-wrap gap-2'>
-                                                    {movie.production_companies.map(
-                                                        (pc, i) => (
-                                                            <Badge key={i}>
-                                                                {pc.name}
-                                                            </Badge>
-                                                        )
-                                                    )}
-                                                </dd> */}
-                                                    <dd className='grid grid-cols-1  md:grid-cols-[repeat(auto-fill,minmax(130px,1fr))] gap-4 '>
-                                                        {movie.production_companies.map(
-                                                            (pc, i) => (
-                                                                <Link
-                                                                    key={i}
-                                                                    href={
-                                                                        '/company/' +
-                                                                        pc.id
-                                                                    }>
-                                                                    <div className='relative  aspect-video border-2 bg-primary/5 rounded-2xl '>
-                                                                        <Image
-                                                                            src={`https://image.tmdb.org/t/p/w500${pc.logo_path}`}
-                                                                            alt=''
-                                                                            fill
-                                                                            className='h-28 p-4'
-                                                                        />
-                                                                        {/* <div className='p-4'>
-                                                                    {pc.name}
-                                                                </div> */}
-                                                                    </div>
-                                                                </Link>
-                                                            )
-                                                        )}
-                                                    </dd>
-                                                </div>
                                             </dl>
-                                            <div className='md:hidden relative h-[300px] w-[50%]  '>
+                                            {/* <div className='md:hidden relative h-[300px] w-[50%]  '>
                                                 <Image
                                                     src={
                                                         posterUrl ||
@@ -457,7 +419,49 @@ export function MovieDetails({ movie, reviews }: MovieDetailsProps) {
                                                     fill
                                                     className='h-full object-contain self-end'
                                                 />
-                                            </div>
+                                            </div> */}
+                                        </div>
+                                        <div className='block lg:hidden absolute z-0 top-0 right-0 h-full w-[80%]'>
+                                            <Image
+                                                src={
+                                                    posterUrl ||
+                                                    '/placeholder.svg'
+                                                }
+                                                alt={movie.title}
+                                                fill
+                                                className='object-cover  '
+                                            />
+                                            <div className='absolute inset-0 h-full w-full bg-gradient-to-r from-background via-transparent to-background'></div>
+                                            <div className='absolute inset-0 h-full w-full bg-gradient-to-b from-background via-transparent to-background'></div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h2 className='text-2xl font-bold mb-4'>
+                                            Production Companies
+                                        </h2>
+                                        <div className='grid  grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-4 '>
+                                            {movie.production_companies.map(
+                                                (pc, i) => (
+                                                    <Link
+                                                        key={i}
+                                                        href={
+                                                            '/company/' + pc.id
+                                                        }>
+                                                        <div className='relative  aspect-video border-2 bg-primary/5 rounded-2xl '>
+                                                            <Image
+                                                                src={`https://image.tmdb.org/t/p/w500${pc.logo_path}`}
+                                                                alt=''
+                                                                fill
+                                                                className='h-28 p-4'
+                                                            />
+                                                        </div>
+
+                                                        <div className='p-2'>
+                                                            {pc.name}
+                                                        </div>
+                                                    </Link>
+                                                )
+                                            )}
                                         </div>
                                     </div>
                                 </TabsContent>

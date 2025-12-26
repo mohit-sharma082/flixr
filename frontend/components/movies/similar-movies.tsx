@@ -40,8 +40,10 @@ const SimilarMoviesSection = ({ movie }: MovieDetailsProps) => {
 
     if (error)
         return (
-            <div className='border p-2 whitespace-pre-wrap rounded text-sm'>
-                Error: {JSON.stringify({ error }, null, 4)}
+            <div className='relative border border-destructive max-w-full p-2 text-wrap rounded text-sm'>
+                <pre className='text-pretty break-all'>
+                    Error: {JSON.stringify({ error }, null, 4)}
+                </pre>
             </div>
         );
 
