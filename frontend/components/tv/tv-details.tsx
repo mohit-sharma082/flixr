@@ -22,7 +22,8 @@ import {
     ArrowLeft,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { TVShow } from '@/lib/interfaces';
+import type { Review, TVShow } from '@/lib/interfaces';
+import ReviewsGrid from '../reviews-grid';
 
 const CastAndCrewTab = () => <div />;
 const MediaTab = () => <div />;
@@ -30,9 +31,10 @@ const SimilarShowsSection = () => <div />;
 
 interface TVDetailsProps {
     show: TVShow;
+    reviews?: Review[];
 }
 
-export function TVDetails({ show }: TVDetailsProps) {
+export function TVDetails({ show, reviews }: TVDetailsProps) {
     const [isFavorite, setIsFavorite] = useState(false);
     const [isBookmarked, setIsBookmarked] = useState(false);
 
@@ -443,6 +445,8 @@ export function TVDetails({ show }: TVDetailsProps) {
                             <SimilarShowsSection />
                         </div>
                     </div>
+
+                    <ReviewsGrid reviews={reviews || []} />
                 </div>
             </div>
         </div>
