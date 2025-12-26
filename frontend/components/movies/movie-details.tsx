@@ -1,11 +1,10 @@
 'use client';
 
-import { lazy, Suspense, useState } from 'react';
+import { lazy, Suspense, useMemo, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
@@ -21,21 +20,24 @@ import {
     BookmarkPlus,
     Play,
     ArrowLeft,
+    AtSign,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Movie } from '@/lib/interfaces';
+import { Movie, Review } from '@/lib/interfaces';
 
 import { CastAndCrewSkeleton } from './cast-crew.tab';
 
 const CastAndCrewTab = lazy(() => import('./cast-crew.tab'));
 const MediaTab = lazy(() => import('./media.tab'));
 import SimilarMoviesSection from './similar-movies';
+import ReviewsGrid from '../reviews-grid';
 
 interface MovieDetailsProps {
     movie: Movie;
+    reviews?: Review[];
 }
 
-export function MovieDetails({ movie }: MovieDetailsProps) {
+export function MovieDetails({ movie, reviews }: MovieDetailsProps) {
     const [isFavorite, setIsFavorite] = useState(false);
     const [isBookmarked, setIsBookmarked] = useState(false);
 
@@ -294,7 +296,7 @@ export function MovieDetails({ movie }: MovieDetailsProps) {
 
             {/* Content section */}
             <div className='bg-background'>
-                <div className='container mx-auto px-4 py-8 z-30 '>
+                <div className='container mx-auto px-4 py-8 z-30 space-y-4 '>
                     <div className='grid grid-cols-1 md:grid-cols-3 gap-8'>
                         {/* Main content - 2/3 width on desktop */}
                         <div className='md:col-span-2'>
@@ -419,22 +421,27 @@ export function MovieDetails({ movie }: MovieDetailsProps) {
                                                         )
                                                     )}
                                                 </dd> */}
-                                                    <dd className='flex flex-wrap gap-4 '>
+                                                    <dd className='grid grid-cols-1  md:grid-cols-[repeat(auto-fill,minmax(130px,1fr))] gap-4 '>
                                                         {movie.production_companies.map(
                                                             (pc, i) => (
-                                                                <div
+                                                                <Link
                                                                     key={i}
-                                                                    className='relative w-[45%] aspect-video border rounded-2xl '>
-                                                                    <Image
-                                                                        src={`https://image.tmdb.org/t/p/w500${pc.logo_path}`}
-                                                                        alt=''
-                                                                        fill
-                                                                        className='h-28 p-4'
-                                                                    />
-                                                                    {/* <div className='p-4'>
+                                                                    href={
+                                                                        '/company/' +
+                                                                        pc.id
+                                                                    }>
+                                                                    <div className='relative  aspect-video border-2 bg-primary/5 rounded-2xl '>
+                                                                        <Image
+                                                                            src={`https://image.tmdb.org/t/p/w500${pc.logo_path}`}
+                                                                            alt=''
+                                                                            fill
+                                                                            className='h-28 p-4'
+                                                                        />
+                                                                        {/* <div className='p-4'>
                                                                     {pc.name}
                                                                 </div> */}
-                                                                </div>
+                                                                    </div>
+                                                                </Link>
                                                             )
                                                         )}
                                                     </dd>
@@ -490,6 +497,7 @@ export function MovieDetails({ movie }: MovieDetailsProps) {
                             <SimilarMoviesSection movie={movie} />
                         </div>
                     </div>
+                    <ReviewsGrid reviews={reviews || []} />
                     <div className='h-20'></div>
                 </div>
             </div>

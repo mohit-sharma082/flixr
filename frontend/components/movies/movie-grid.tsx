@@ -12,7 +12,7 @@ export function MovieGrid({ movies }: MovieGridProps) {
         }
 
         return (
-            <div className='grid grid-cols-2 gap-4 sm:grid-cols-2  md:grid-cols-[repeat(auto-fill,minmax(280px,1fr))]'>
+            <div className='grid grid-cols-2 gap-4 sm:grid-cols-2  md:grid-cols-[repeat(auto-fill,minmax(320px,1fr))]'>
                 {movies?.map((movie, i) => (
                     <MovieCard
                         index={i}
