@@ -10,6 +10,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { JetBrains_Mono, Handlee } from 'next/font/google';
 import { Header } from '@/components/header';
 import { ThemeProvider } from '@/components/theme-provider';
+import ClickSpark from '@/components/reactbits/click-spark';
 
 // Initialize fonts
 const jetBrainsMono = JetBrains_Mono({
@@ -38,8 +39,15 @@ export default function RootLayout({
                     enableSystem
                     disableTransitionOnChange>
                     <ReduxProvider>
-                        <Header />
-                        {children}
+                        {/* <Header /> */}
+                        <ClickSpark
+                            sparkColor='#fff'
+                            sparkSize={10}
+                            sparkRadius={15}
+                            sparkCount={8}
+                            duration={400}>
+                            {children}
+                        </ClickSpark>
                     </ReduxProvider>
                     <Analytics />
                     <Toaster />
