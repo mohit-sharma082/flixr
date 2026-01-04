@@ -40,10 +40,9 @@ Top Rated
 
  */
 
-export const getHomePageData= async (req: Request, res: Response) => {
-
-    // one page of trending movies 
-    // one page of trending tv shows 
+export const getHomePageData = async (req: Request, res: Response) => {
+    // one page of trending movies
+    // one page of trending tv shows
 
     // one page of now playing movies
     // one page of popular movies
@@ -55,21 +54,93 @@ export const getHomePageData= async (req: Request, res: Response) => {
     // one page of top rated tv shows
     // one page of on the air tv shows
 
-    // const arr 
+    const arr = [
+        () => TMDB_ROUTES.trending.movie('week'),
+        () => TMDB_ROUTES.trending.tv('week'),
+        TMDB_ROUTES.movies.nowPlaying,
+        TMDB_ROUTES.movies.popular,
+        TMDB_ROUTES.movies.topRated,
+        TMDB_ROUTES.movies.upcoming,
+        TMDB_ROUTES.tv.airingToday,
+        TMDB_ROUTES.tv.popular,
+        TMDB_ROUTES.tv.topRated,
+        TMDB_ROUTES.tv.onTheAir,
 
-    const [trendingMovies, trendingTvs] = await Promise.allSettled([
-        tmdbClient.raw(
-            TMDB_ROUTES.trending.movie('week'),
-            { page: 1 },
-            high_ttl
-        ),
-        tmdbClient.raw(
-            TMDB_ROUTES.trending.tv('week'),
-            { page: 1 },
-            high_ttl
-        ),
-    ]);
-}
+        TMDB_ROUTES.genres.movie,
+        TMDB_ROUTES.genres.tv,
+    ];
+    const results = await Promise.allSettled(
+        arr.map((route) =>
+            tmdbClient.raw(route(), { page: 1, adult: false }, high_ttl)
+        )
+    );
+
+    const responseData: any = {
+        movies: {},
+        tv: {},
+        genres: {
+            movies: [],
+            tv: [],
+        },
+    };
+
+    results.forEach((result, index) => {
+        if (result.status === 'fulfilled') {
+            switch (index) {
+                case 0:
+                    responseData.movies.trending =
+                        result.value?.results ?? result.value;
+                    break;
+                case 1:
+                    responseData.tv.trending =
+                        result.value?.results ?? result.value;
+                    break;
+                case 2:
+                    responseData.movies.nowPlaying =
+                        result.value?.results ?? result.value;
+                    break;
+                case 3:
+                    responseData.movies.popular =
+                        result.value?.results ?? result.value;
+                    break;
+                case 4:
+                    responseData.movies.topRated =
+                        result.value?.results ?? result.value;
+                    break;
+                case 5:
+                    responseData.movies.upcoming =
+                        result.value?.results ?? result.value;
+                    break;
+                case 6:
+                    responseData.tv.airingToday =
+                        result.value?.results ?? result.value;
+                    break;
+                case 7:
+                    responseData.tv.popular =
+                        result.value?.results ?? result.value;
+                    break;
+                case 8:
+                    responseData.tv.topRated =
+                        result.value?.results ?? result.value;
+                    break;
+                case 9:
+                    responseData.tv.onTheAir =
+                        result.value?.results ?? result.value;
+                    break;
+                case 10:
+                    responseData.genres.movies = result.value?.genres ?? [];
+                    break;
+                case 11:
+                    responseData.genres.tv = result.value?.genres ?? [];
+                    break;
+            }
+        }
+    });
+
+    return res.json({
+        data: responseData,
+    });
+};
 
 export const trending = async (req: Request, res: Response) => {
     // const page = parsePage(req.query.page);
@@ -112,6 +183,29 @@ export const trending = async (req: Request, res: Response) => {
         data: {
             movies: allMovies,
             tvs: allTvs,
+        },
+    });
+};
+
+export const getGenres = async (req: Request, res: Response) => {
+    const [movieGenresRes, tvGenresRes] = await Promise.allSettled([
+        tmdbClient.raw(TMDB_ROUTES.genres.movie(), {}, high_ttl),
+        tmdbClient.raw(TMDB_ROUTES.genres.tv(), {}, high_ttl),
+    ]);
+
+    const movieGenres =
+        movieGenresRes.status === 'fulfilled'
+            ? movieGenresRes.value.genres
+            : [];
+    const tvGenres =
+        tvGenresRes.status === 'fulfilled' ? tvGenresRes.value.genres : [];
+
+    return res.json({
+        data: {
+            genres: {
+                movies: movieGenres,
+                tv: tvGenres,
+            },
         },
     });
 };

@@ -41,6 +41,7 @@ export const TMDB_ROUTES = {
         watchProviders: (id: number | string) => `/movie/${id}/watch/providers`,
         recommendations: (id: number | string) =>
             `/movie/${id}/recommendations`,
+        trending: () => `/trending/movie/week`,
 
         // for lists
         popular: () => `/movie/popular`,
@@ -84,6 +85,7 @@ export const TMDB_ROUTES = {
         topRated: () => `/tv/top_rated`,
         onTheAir: () => `/tv/on_the_air`,
         airingToday: () => `/tv/airing_today`,
+        trending: () => `/trending/tv/week`,
 
         discover: () => `/discover/tv`,
         search: () => `/search/tv`,
@@ -100,8 +102,8 @@ export const TMDB_ROUTES = {
 
     // Genres
     genres: {
-        movieList: () => `/genre/movie/list`,
-        tvList: () => `/genre/tv/list`,
+        movie: () => `/genre/movie/list`,
+        tv: () => `/genre/tv/list`,
     },
 
     // Trending
