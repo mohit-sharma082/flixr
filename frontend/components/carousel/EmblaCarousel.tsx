@@ -165,7 +165,10 @@ const EmblaCarousel: React.FC<PropType> = (props) => {
                                 <div className='embla__parallax  relative'>
                                     <Link href={href} key={index}>
                                         <div className='absolute inset-0 h-full w-full bg-gradient-to-tr from-black via-black/60 to-transparent z-20 p-2 md:p-6'>
-                                            <div className='flex flex-col gap-2 items-start justify-end w-[70%] h-full'>
+                                            <div className='flex flex-col gap-2 items-start justify-end w-[80%] h-full'>
+                                                <span className='text-xs md:text-sm text-white/80 line-clamp-2 md:line-clamp-6 uppercase'>
+                                                    {item.mediaType}
+                                                </span>
                                                 <span className='scale-75 md:scale-100 bg-primary text-primary-foreground px-3 py-1 ring-1 ring-offset-2 rounded-full flex  items-center gap-1 text-xs font-bold'>
                                                     <Star
                                                         className='h-3 w-3 '

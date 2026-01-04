@@ -54,6 +54,7 @@ export default function HeroCarousel({
             vote_average: mv.vote_average,
             raw: mv,
         }));
+
         const s: Item[] = (shows || []).map((sh) => ({
             id: sh.id,
             mediaType: 'tv',
@@ -67,14 +68,22 @@ export default function HeroCarousel({
             vote_average: sh.vote_average,
             raw: sh,
         }));
-        const combined = [...m, ...s];
-        combined.sort(
+        const MOVIES = m.sort(
             (a, b) => (b.raw.popularity ?? 0) - (a.raw.popularity ?? 0)
         );
-        return combined.slice(
-            0,
-            Math.max(1, Math.min(maxItems, combined.length))
+        const SHOWS = s.sort(
+            (a, b) => (b.raw.popularity ?? 0) - (a.raw.popularity ?? 0)
         );
+        const mixed: Item[] = [];
+        const maxLength = Math.max(m.length, s.length);
+
+        for (let i = 0; i < maxLength; i++) {
+            if (MOVIES[i]) mixed.push(MOVIES[i]);
+            if (SHOWS[i]) mixed.push(SHOWS[i]);
+            if (mixed.length >= maxItems) break;
+        }
+
+        return mixed.slice(0, maxItems);
     }, [movies, shows, maxItems]);
 
     return (

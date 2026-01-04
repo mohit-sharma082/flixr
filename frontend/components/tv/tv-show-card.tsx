@@ -16,9 +16,7 @@ interface TVCardProps {
 }
 
 export function TvShowCard({ show, index }: TVCardProps) {
-    const [isHovered, setIsHovered] = useState(false);
-    const [isFavorite, setIsFavorite] = useState(false);
-    const [imageError, setImageError] = useState(false);
+    // const [isHovered, setIsHovered] = useState(false);
 
     // Title / name fallback
     const title = show.name || show.original_name || 'Untitled';
@@ -44,12 +42,6 @@ export function TvShowCard({ show, index }: TVCardProps) {
         return 'text-red-500';
     };
 
-    const handleFavoriteToggle = (e: React.MouseEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setIsFavorite((s) => !s);
-    };
-
     return (
         <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -59,17 +51,24 @@ export function TvShowCard({ show, index }: TVCardProps) {
             <Link href={`/tv/${show.id}`} className='block h-full'>
                 <Card
                     className='shadow-none cursor-pointer relative overflow-hidden transition-all duration-300 bg-transparent border-0 rounded-lg group h-full flex flex-col'
-                    onMouseEnter={() => setIsHovered(true)}
-                    onMouseLeave={() => setIsHovered(false)}>
+                    // onMouseEnter={() => setIsHovered(true)}
+                    // onMouseLeave={() => setIsHovered(false)}
+                >
                     <div className='relative aspect-[2/3] overflow-hidden rounded-lg flex-shrink-0'>
-                        {posterUrl && !imageError ? (
+                        {posterUrl ? (
                             <Image
                                 src={posterUrl || '/placeholder.svg'}
                                 alt={title}
                                 fill
                                 className='object-cover transition-transform duration-500 group-hover:scale-105 bg-primary/20'
                                 sizes='(max-width: 640px) 42vw, (max-width: 768px) 180px, (max-width: 1024px) 210px, 260px'
-                                onError={() => setImageError(true)}
+                                onError={(e) =>
+                                    console.log(
+                                        'Error loading image:',
+                                        posterUrl,
+                                        e
+                                    )
+                                }
                                 priority={index < 4}
                             />
                         ) : backdropUrl ? (
@@ -91,15 +90,14 @@ export function TvShowCard({ show, index }: TVCardProps) {
                         {/* overlay gradient */}
                         <div
                             className={cn(
-                                'absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent transition-opacity duration-300',
-                                isHovered ? 'opacity-100' : 'opacity-0'
+                                'absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent transition-opacity duration-300 group-hover:opacity-100 opacity-0'
                             )}
                         />
 
                         {/* Adult badge (TV rarely uses adult, but keep for parity) */}
                         {/* TMDB TV object doesn't have `adult` field — check before rendering */}
                         {(show as any).adult && (
-                            <div className='absolute top-2 left-2 z-10'>
+                            <div className='absolute top-2 left-2 z-10 group-hover:top-8 transition-all'>
                                 <Badge
                                     variant='destructive'
                                     className='flex items-center gap-1'>
@@ -112,9 +110,8 @@ export function TvShowCard({ show, index }: TVCardProps) {
                         {/* Media type badge */}
                         <div
                             className={cn(
-                                'absolute top-2 left-2 z-10 transition-opacity duration-300',
-                                (show as any).adult ? 'left-14' : '',
-                                isHovered ? 'opacity-100' : 'opacity-0'
+                                'absolute top-2 left-2 z-10 transition-opacity duration-300 group-hover:opacity-100 opacity-0',
+                                (show as any).adult ? 'left-14' : ''
                             )}>
                             <Badge
                                 variant='outline'
@@ -124,34 +121,11 @@ export function TvShowCard({ show, index }: TVCardProps) {
                             </Badge>
                         </div>
 
-                        {/* Favorite button */}
-                        <button
-                            className={cn(
-                                'absolute top-2 right-2 p-1.5 rounded-full bg-black/50 backdrop-blur-sm transition-all duration-300',
-                                isHovered ? 'opacity-100' : 'opacity-0'
-                            )}
-                            onClick={handleFavoriteToggle}
-                            aria-label={
-                                isFavorite
-                                    ? 'Remove from favorites'
-                                    : 'Add to favorites'
-                            }>
-                            <Heart
-                                className={cn(
-                                    'w-4 h-4',
-                                    isFavorite
-                                        ? 'fill-primary text-primary'
-                                        : 'text-white'
-                                )}
-                            />
-                        </button>
-
                         {/* Rating */}
                         {typeof show.vote_average === 'number' && (
                             <div
                                 className={cn(
-                                    'absolute bottom-2 right-2 flex items-center gap-1 bg-black/50 backdrop-blur-sm rounded-full px-2 py-1 transition-all duration-300',
-                                    isHovered ? 'opacity-100' : 'opacity-0'
+                                    'absolute bottom-2 right-2 flex items-center gap-1 bg-black/50 backdrop-blur-sm rounded-full px-2 py-1 transition-all duration-300 group-hover:opacity-100 opacity-0'
                                 )}>
                                 <Star
                                     className={cn(
@@ -172,10 +146,8 @@ export function TvShowCard({ show, index }: TVCardProps) {
                         {/* Overview on hover */}
                         <div
                             className={cn(
-                                'absolute bottom-0 left-0 right-0 p-3 transition-all duration-300',
-                                isHovered
-                                    ? 'translate-y-0 opacity-100'
-                                    : 'translate-y-4 opacity-0'
+                                'absolute bottom-0 left-0 right-0 p-3 transition-all duration-300 translate-y-4 opacity-0',
+                                'group-hover:translate-y-0 group-hover:opacity-100'
                             )}>
                             <p className='text-xs text-gray-200 line-clamp-6 w-2/3'>
                                 {show.overview || 'No description available.'}
@@ -188,28 +160,23 @@ export function TvShowCard({ show, index }: TVCardProps) {
                             <h3 className='font-medium line-clamp-1 text-sm sm:text-base'>
                                 {title}
                             </h3>
-                            {!isHovered &&
-                                typeof show.vote_average === 'number' && (
-                                    <div className='flex items-center gap-1 ml-1'>
-                                        <Star
-                                            className={cn(
-                                                'w-3 h-3 fill-current',
-                                                getRatingColor(
-                                                    show.vote_average
-                                                )
-                                            )}
-                                        />
-                                        <span
-                                            className={cn(
-                                                'text-xs',
-                                                getRatingColor(
-                                                    show.vote_average
-                                                )
-                                            )}>
-                                            {show.vote_average.toFixed(1)}
-                                        </span>
-                                    </div>
-                                )}
+                            {typeof show.vote_average === 'number' && (
+                                <div className='flex items-center gap-1 ml-1'>
+                                    <Star
+                                        className={cn(
+                                            'w-3 h-3 fill-current',
+                                            getRatingColor(show.vote_average)
+                                        )}
+                                    />
+                                    <span
+                                        className={cn(
+                                            'text-xs',
+                                            getRatingColor(show.vote_average)
+                                        )}>
+                                        {show.vote_average.toFixed(1)}
+                                    </span>
+                                </div>
+                            )}
                         </div>
 
                         <div className='flex items-center justify-between mt-1'>
