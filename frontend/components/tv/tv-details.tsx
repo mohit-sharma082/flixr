@@ -138,14 +138,6 @@ export function TVDetails({ show, reviews }: TVDetailsProps) {
                                         <span className='capitalize'>tv</span>
                                     </Badge>
 
-                                    {show.tagline && (
-                                        <Badge
-                                            variant='outline'
-                                            className='bg-black/30 backdrop-blur-sm text-white border-none'>
-                                            {show.tagline}
-                                        </Badge>
-                                    )}
-
                                     {show.adult && (
                                         <Badge
                                             variant='destructive'
@@ -165,7 +157,7 @@ export function TVDetails({ show, reviews }: TVDetailsProps) {
                                             {!show.in_production &&
                                             show.last_air_date
                                                 ? ` ${new Date(
-                                                      show.last_air_date
+                                                      show.last_air_date,
                                                   ).getFullYear()}`
                                                 : ''}
                                             )
@@ -196,8 +188,8 @@ export function TVDetails({ show, reviews }: TVDetailsProps) {
                                                     className={cn(
                                                         'h-5 w-5 fill-current',
                                                         getRatingColor(
-                                                            show.vote_average
-                                                        )
+                                                            show.vote_average,
+                                                        ),
                                                     )}
                                                 />
                                             </div>
@@ -207,11 +199,11 @@ export function TVDetails({ show, reviews }: TVDetailsProps) {
                                                 className={cn(
                                                     'text-xl font-bold',
                                                     getRatingColor(
-                                                        show.vote_average
-                                                    )
+                                                        show.vote_average,
+                                                    ),
                                                 )}>
                                                 {show.vote_average?.toFixed(
-                                                    1
+                                                    1,
                                                 ) ?? '—'}
                                             </div>
                                             <div className='text-xs text-muted-foreground'>
@@ -232,7 +224,7 @@ export function TVDetails({ show, reviews }: TVDetailsProps) {
                                         <Globe className='h-5 w-5 text-muted-foreground' />
                                         <span className='text-sm text-muted-foreground'>
                                             {getLanguageName(
-                                                show.original_language
+                                                show.original_language,
                                             )}
                                         </span>
                                     </div>
@@ -245,7 +237,7 @@ export function TVDetails({ show, reviews }: TVDetailsProps) {
                                         className={cn(
                                             'rounded-full',
                                             isFavorite &&
-                                                'text-primary border-primary'
+                                                'text-primary border-primary',
                                         )}
                                         onClick={() =>
                                             setIsFavorite(!isFavorite)
@@ -253,7 +245,7 @@ export function TVDetails({ show, reviews }: TVDetailsProps) {
                                         <Heart
                                             className={cn(
                                                 'h-5 w-5',
-                                                isFavorite && 'fill-primary'
+                                                isFavorite && 'fill-primary',
                                             )}
                                         />
                                         <span className='sr-only'>
@@ -269,7 +261,7 @@ export function TVDetails({ show, reviews }: TVDetailsProps) {
                                         className={cn(
                                             'rounded-full',
                                             isBookmarked &&
-                                                'text-primary border-primary'
+                                                'text-primary border-primary',
                                         )}
                                         onClick={() =>
                                             setIsBookmarked(!isBookmarked)
@@ -277,7 +269,7 @@ export function TVDetails({ show, reviews }: TVDetailsProps) {
                                         <BookmarkPlus
                                             className={cn(
                                                 'h-5 w-5',
-                                                isBookmarked && 'fill-primary'
+                                                isBookmarked && 'fill-primary',
                                             )}
                                         />
                                         <span className='sr-only'>
@@ -303,7 +295,12 @@ export function TVDetails({ show, reviews }: TVDetailsProps) {
 
             {/* Content section */}
             <div className='bg-background'>
-                <div className='container mx-auto px-4 py-8 z-30 space-y-4'>
+                <div className='container mx-auto p-4 pb-8 z-30 space-y-4'>
+                    {show.tagline && (
+                        <div className='p-4 border-l-4 border-primary italic text-foreground bg-muted/50 rounded w-fit min-w-1/2'>
+                            {show.tagline}
+                        </div>
+                    )}
                     <div className='grid grid-cols-1 md:grid-cols-3 gap-8'>
                         {/* Main content - 2/3 width on desktop */}
                         <div className='md:col-span-2'>
@@ -387,7 +384,7 @@ export function TVDetails({ show, reviews }: TVDetailsProps) {
                                                     </dt>
                                                     <dd className='text-base'>
                                                         {getLanguageName(
-                                                            show.original_language
+                                                            show.original_language,
                                                         )}
                                                     </dd>
                                                 </div>
@@ -397,7 +394,7 @@ export function TVDetails({ show, reviews }: TVDetailsProps) {
                                                     </dt>
                                                     <dd className='text-base'>
                                                         {show.popularity?.toFixed(
-                                                            1
+                                                            1,
                                                         )}
                                                     </dd>
                                                 </div>
@@ -412,7 +409,7 @@ export function TVDetails({ show, reviews }: TVDetailsProps) {
                                                 }
                                                 alt={show.name}
                                                 fill
-                                                className='object-cover opacity-50'
+                                                className='object-cover'
                                             />
                                             <div className='absolute inset-0 h-full w-full bg-gradient-to-r from-background via-transparent to-background'></div>
                                             <div className='absolute inset-0 h-full w-full bg-gradient-to-b from-background via-transparent to-background'></div>
@@ -453,7 +450,7 @@ export function TVDetails({ show, reviews }: TVDetailsProps) {
                                                             {pc.name}
                                                         </div>
                                                     </Link>
-                                                )
+                                                ),
                                             )}
                                         </div>
                                     </div>
@@ -465,49 +462,86 @@ export function TVDetails({ show, reviews }: TVDetailsProps) {
                                     <h2 className='text-2xl font-bold mb-4'>
                                         Seasons
                                     </h2>
-                                    <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4'>
-                                        {show.seasons?.map((season) => (
-                                            <Card
-                                                key={season.id}
-                                                className='p-0 overflow-hidden hover:ring-2 ring-primary transition-all'>
-                                                <Link
-                                                    href={`/tv/${show.id}/season/${season.season_number}`}
-                                                    className='block'>
-                                                    <div className='relative aspect-[2/3]'>
-                                                        {season.poster_path ? (
-                                                            <Image
-                                                                src={`https://image.tmdb.org/t/p/w300${season.poster_path}`}
-                                                                alt={
-                                                                    season.name
-                                                                }
-                                                                fill
-                                                                className='object-cover'
-                                                            />
-                                                        ) : (
-                                                            <div className='flex items-center justify-center h-full bg-muted text-xs p-4 text-center'>
+                                    <div className='grid grid-cols-2 md:grid-cols-3  gap-4'>
+                                        {show.seasons
+                                            .sort(
+                                                (a, b) =>
+                                                    a.season_number -
+                                                    b.season_number,
+                                            )
+                                            .map((season) => (
+                                                <Card
+                                                    key={season.id}
+                                                    className='p-0 relative overflow-hidden hover:ring-2 ring-primary transition-all group'>
+                                                    <Link
+                                                        href={`/tv/${show.id}/season/${season.season_number}`}
+                                                        className='bltextock'>
+                                                        <div className='relative aspect-[0.7] overflow-hidden'>
+                                                            {season.poster_path ? (
+                                                                <Image
+                                                                    src={`https://image.tmdb.org/t/p/w300${season.poster_path}`}
+                                                                    alt={
+                                                                        season.name
+                                                                    }
+                                                                    fill
+                                                                    className='object-cover group-hover:scale-105 transition-all duration-300'
+                                                                />
+                                                            ) : (
+                                                                <div className='flex items-center justify-center h-full bg-muted text-xs p-4 text-center'>
+                                                                    {
+                                                                        season.name
+                                                                    }
+                                                                </div>
+                                                            )}
+                                                            {/* Rating */}
+                                                            {season?.vote_average !=
+                                                                null && (
+                                                                <div
+                                                                    className={cn(
+                                                                        ' flex items-center gap-1 bg-black/50 backdrop-blur-sm rounded-full px-2 py-1 transition-all duration-300 group-hover:scale-110',
+                                                                        'absolute bottom-2 right-2',
+                                                                    )}>
+                                                                    <Star
+                                                                        className={cn(
+                                                                            'w-3 h-3 fill-current',
+                                                                            getRatingColor(
+                                                                                season.vote_average,
+                                                                            ),
+                                                                        )}
+                                                                    />
+                                                                    <span
+                                                                        className={cn(
+                                                                            'text-xs font-medium',
+                                                                            getRatingColor(
+                                                                                season.vote_average,
+                                                                            ),
+                                                                        )}>
+                                                                        {season.vote_average.toFixed(
+                                                                            1,
+                                                                        )}
+                                                                    </span>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        <div className='p-4'>
+                                                            <div className=' font-bold truncate'>
                                                                 {season.name}
                                                             </div>
-                                                        )}
-                                                    </div>
-                                                    <div className='p-3'>
-                                                        <div className='text-sm font-bold truncate'>
-                                                            {season.name}
+                                                            <div className='text-xs group-hover:text-foreground group-hover:font-medium transition-all duration-200 text-muted-foreground'>
+                                                                {
+                                                                    season.episode_count
+                                                                }{' '}
+                                                                Episodes •{' '}
+                                                                {season.air_date
+                                                                    ? new Date(
+                                                                          season.air_date,
+                                                                      ).getFullYear()
+                                                                    : 'N/A'}
+                                                            </div>
                                                         </div>
-                                                        <div className='text-xs text-muted-foreground'>
-                                                            {
-                                                                season.episode_count
-                                                            }{' '}
-                                                            Episodes •{' '}
-                                                            {season.air_date
-                                                                ? new Date(
-                                                                      season.air_date
-                                                                  ).getFullYear()
-                                                                : 'N/A'}
-                                                        </div>
-                                                    </div>
-                                                </Link>
-                                            </Card>
-                                        ))}
+                                                    </Link>
+                                                </Card>
+                                            ))}
                                     </div>
                                 </TabsContent>
 
