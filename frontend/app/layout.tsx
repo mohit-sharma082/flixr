@@ -11,6 +11,7 @@ import { JetBrains_Mono, Handlee } from 'next/font/google';
 import { Header } from '@/components/header';
 import { ThemeProvider } from '@/components/theme-provider';
 import ClickSpark from '@/components/reactbits/click-spark';
+import { FloatingNavFAB } from '@/components/floating-nav';
 
 // Initialize fonts
 const jetBrainsMono = JetBrains_Mono({
@@ -40,6 +41,7 @@ export default function RootLayout({
                     disableTransitionOnChange>
                     <ReduxProvider>
                         {/* <Header /> */}
+                        <FloatingNavFAB />
                         <ClickSpark
                             sparkColor='#fff'
                             sparkSize={10}

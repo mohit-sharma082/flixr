@@ -1,8 +1,25 @@
 import HeroCarousel from '@/components/hero-carousel';
 import { MovieCard } from '@/components/movies/movie-card';
-import { TvShowCard } from '@/components/tv/tv-show-card';
+import dynamic from 'next/dynamic';
 import { createServerApi } from '@/lib/api';
 import { Genre, Movie, TVShow } from '@/lib/interfaces';
+
+const CompactList = dynamic(
+    () => import('@/components/lists').then((mod) => mod.CompactList),
+    {
+        loading: () => (
+            <div className='h-20 w-full animate-pulse'>Loading...</div>
+        ),
+    }
+);
+const NumberedList = dynamic(
+    () => import('@/components/lists').then((mod) => mod.NumberedList),
+    {
+        loading: () => (
+            <div className='h-20 w-full animate-pulse'>Loading...</div>
+        ),
+    }
+);
 
 export const metadata = {
     title: 'Home | Flixr',
@@ -43,6 +60,7 @@ async function getTrendingItems(): Promise<ReponseData | null> {
 }
 
 export default async function HomePage() {
+    // return <main className='min-h-screen p-4 '>Temp return</main>;
     const response = await getTrendingItems();
     // console.log('GOT :', response);
     if (!response) {
@@ -52,121 +70,44 @@ export default async function HomePage() {
     const { movies, tv: shows, genres } = response;
 
     return (
-        <main className='min-h-screen '>
-            <div className='pt-4 bg-background'>
-                {/* <HeroCarousel movies={movies.trending} shows={shows.trending} /> */}
+        <main className='min-h-screen bg-background'>
+            {/* HERO */}
+            <div className='pt-4'>
+                <HeroCarousel
+                    movies={movies.trending}
+                    shows={shows.trending}
+                    maxItems={12}
+                />
             </div>
 
-            <div className=' px-4 sm:px-6 lg:px-8 py-6'>
-                <div className=''>
-                    <h1 className='text-3xl font-bold '>Now Playing Movies</h1>
-                    <p className=' mt-2'>
-                        Discover what's currently playing in theaters near you.
-                    </p>
-                </div>
+            <section className='px-4 sm:px-6 lg:px-8 pt-6'>
+                <h2 className='text-xl font-semibold'>Movies - Now Playing</h2>
 
-                <div className='grid grid-cols-2 gap-4 sm:grid-cols-2  md:grid-cols-[repeat(auto-fill,minmax(280px,1fr))]'>
-                    {movies?.nowPlaying?.map((movie, i) => (
-                        <MovieCard
-                            index={i}
-                            key={i || movie.id}
-                            movie={movie}
-                        />
+                <div className='flex items-stretch gap-4 overflow-x-scroll snap-x snap-mandatory'>
+                    {movies.nowPlaying.map((item) => (
+                        <MovieCard key={item.id} movie={item} index={0} />
                     ))}
+                    <div className='w-20 p-8 bg-transparent h-full min-h-1/2'></div>
                 </div>
-            </div>
+            </section>
 
-            <div className=' px-4 sm:px-6 lg:px-8 py-6'>
-                <div className=''>
-                    <h1 className='text-3xl font-bold '>Trending TV Shows</h1>
-                    <p className=' mt-2'></p>
-                </div>
+            <NumberedList title='Most Popular TV Shows' items={shows.popular} />
+            <NumberedList title='Most Popular Movies' items={movies.popular} />
 
-                <div className='grid grid-cols-2 gap-4 sm:grid-cols-2  md:grid-cols-[repeat(auto-fill,minmax(280px,1fr))]'>
-                    {shows?.trending?.map((show, i) => (
-                        <TvShowCard index={i} key={i || show.id} show={show} />
-                    ))}
-                </div>
-            </div>
+            <CompactList title='Shows - On The Air' items={shows.onTheAir} />
+            <CompactList title='Top Rated Movies' items={movies.topRated} />
 
-            <div className=' px-4 sm:px-6 lg:px-8 py-6'>
-                <div className=''>
-                    <h1 className='text-3xl font-bold '>Popular Movies</h1>
-                    <p className=' mt-2'>
-                        Discover the most popular movies loved by audiences
-                        worldwide.
-                    </p>
-                </div>
+            <NumberedList title='Upcoming Movies' items={movies.upcoming} />
+            <NumberedList
+                title='Shows Airing Today'
+                items={shows.airingToday}
+            />
+            <CompactList title='Top Rated Shows' items={shows.topRated} />
 
-                <div className='grid grid-cols-2 gap-4 sm:grid-cols-2  md:grid-cols-[repeat(auto-fill,minmax(280px,1fr))]'>
-                    {movies?.popular?.map((movie, i) => (
-                        <MovieCard
-                            index={i}
-                            key={i || movie.id}
-                            movie={movie}
-                        />
-                    ))}
-                </div>
-            </div>
+            <CompactList title='Shows | Trending' items={shows.trending} />
+            <CompactList title='Movies | Trending' items={movies.trending} />
 
-            <div className=' px-4 sm:px-6 lg:px-8 py-6'>
-                <div className=''>
-                    <h1 className='text-3xl font-bold '>Top Rated Movies</h1>
-                    <p className=' mt-2'>
-                        Discover the highest rated movies by audiences
-                        worldwide.
-                    </p>
-                </div>
-
-                <div className='grid grid-cols-2 gap-4 sm:grid-cols-2  md:grid-cols-[repeat(auto-fill,minmax(280px,1fr))]'>
-                    {movies?.topRated?.map((movie, i) => (
-                        <MovieCard
-                            index={i}
-                            key={i || movie.id}
-                            movie={movie}
-                        />
-                    ))}
-                </div>
-            </div>
-
-            <div className=' px-4 sm:px-6 lg:px-8 py-6'>
-                <div className=''>
-                    <h1 className='text-3xl font-bold '>Popular TV Shows</h1>
-                    <p className=' mt-2'></p>
-                </div>
-
-                <div className='grid grid-cols-2 gap-4 sm:grid-cols-2  md:grid-cols-[repeat(auto-fill,minmax(280px,1fr))]'>
-                    {shows?.popular?.map((show, i) => (
-                        <TvShowCard index={i} key={i || show.id} show={show} />
-                    ))}
-                </div>
-            </div>
-            <div className=' px-4 sm:px-6 lg:px-8 py-6'>
-                <div className=''>
-                    <h1 className='text-3xl font-bold '>
-                        TV Shows Airing Today
-                    </h1>
-                    <p className=' mt-2'></p>
-                </div>
-
-                <div className='grid grid-cols-2 gap-4 sm:grid-cols-2  md:grid-cols-[repeat(auto-fill,minmax(280px,1fr))]'>
-                    {shows?.airingToday?.map((show, i) => (
-                        <TvShowCard index={i} key={i || show.id} show={show} />
-                    ))}
-                </div>
-            </div>
-            <div className=' px-4 sm:px-6 lg:px-8 py-6'>
-                <div className=''>
-                    <h1 className='text-3xl font-bold '>On The Air TV Shows</h1>
-                    <p className=' mt-2'></p>
-                </div>
-
-                <div className='grid grid-cols-2 gap-4 sm:grid-cols-2  md:grid-cols-[repeat(auto-fill,minmax(280px,1fr))]'>
-                    {shows?.onTheAir?.map((show, i) => (
-                        <TvShowCard index={i} key={i || show.id} show={show} />
-                    ))}
-                </div>
-            </div>
+            <div className='h-20 py-8 w-1'></div>
         </main>
     );
 }
