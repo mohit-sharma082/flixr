@@ -80,7 +80,10 @@ const CastAndCrewTab = ({ credits: CREDITS }: { credits: Credits }) => {
                 {credits.cast.length > 0 ? (
                     <div className='flex  flex-wrap gap-4'>
                         {credits.cast.map((person, i) => (
-                            <Link key={i} href={`/person/${person.id}`}>
+                            <Link
+                                key={i}
+                                prefetch={false}
+                                href={`/person/${person.id}`}>
                                 <div className='w-[120px] md:w-[150px] space-y-3'>
                                     <div className='overflow-hidden rounded-md'>
                                         <Avatar className='h-[120px] md:h-[150px] w-[120px] md:w-[150px] rounded-md'>
@@ -145,38 +148,49 @@ const CastAndCrewTab = ({ credits: CREDITS }: { credits: Credits }) => {
                                 </h3>
                                 <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'>
                                     {crewByDepartment[department].map(
-                                        (person) => (
-                                            <div
-                                                key={person.credit_id}
-                                                className='flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors'>
-                                                <Avatar className='h-12 w-12 rounded-md'>
-                                                    {person.profile_path ? (
-                                                        <AvatarImage
-                                                            src={
-                                                                getProfileUrl(
-                                                                    person.profile_path
-                                                                ) || ''
-                                                            }
-                                                            alt={person.name}
-                                                            className='object-cover'
-                                                        />
-                                                    ) : (
-                                                        <AvatarFallback className='bg-muted text-sm'>
-                                                            {getInitials(
-                                                                person.name
-                                                            )}
-                                                        </AvatarFallback>
-                                                    )}
-                                                </Avatar>
-                                                <div>
-                                                    <p className='font-medium text-sm leading-none'>
-                                                        {person.name}
-                                                    </p>
-                                                    <p className='text-xs text-muted-foreground mt-1'>
-                                                        {person.job}
-                                                    </p>
+                                        (person, pidx) => (
+                                            <Link
+                                                key={
+                                                    pidx +
+                                                    '_' +
+                                                    department +
+                                                    '_' +
+                                                    person?.credit_id
+                                                }
+                                                prefetch={false}
+                                                href={`/person/${person.id}`}>
+                                                <div className='flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors'>
+                                                    <Avatar className='h-12 w-12 rounded-md'>
+                                                        {person.profile_path ? (
+                                                            <AvatarImage
+                                                                src={
+                                                                    getProfileUrl(
+                                                                        person.profile_path
+                                                                    ) || ''
+                                                                }
+                                                                alt={
+                                                                    person.name
+                                                                }
+                                                                className='object-cover'
+                                                            />
+                                                        ) : (
+                                                            <AvatarFallback className='bg-muted text-sm'>
+                                                                {getInitials(
+                                                                    person.name
+                                                                )}
+                                                            </AvatarFallback>
+                                                        )}
+                                                    </Avatar>
+                                                    <div>
+                                                        <p className='font-medium text-sm leading-none'>
+                                                            {person.name}
+                                                        </p>
+                                                        <p className='text-xs text-muted-foreground mt-1'>
+                                                            {person.job}
+                                                        </p>
+                                                    </div>
                                                 </div>
-                                            </div>
+                                            </Link>
                                         )
                                     )}
                                 </div>

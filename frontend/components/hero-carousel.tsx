@@ -68,14 +68,15 @@ export default function HeroCarousel({
             vote_average: sh.vote_average,
             raw: sh,
         }));
-        const MOVIES = m.sort(
+
+        const MOVIES = [...m].sort(
             (a, b) => (b.raw.popularity ?? 0) - (a.raw.popularity ?? 0)
         );
-        const SHOWS = s.sort(
+        const SHOWS = [...s].sort(
             (a, b) => (b.raw.popularity ?? 0) - (a.raw.popularity ?? 0)
         );
         const mixed: Item[] = [];
-        const maxLength = Math.max(m.length, s.length);
+        const maxLength = Math.max(MOVIES.length, SHOWS.length);
 
         for (let i = 0; i < maxLength; i++) {
             if (MOVIES[i]) mixed.push(MOVIES[i]);
