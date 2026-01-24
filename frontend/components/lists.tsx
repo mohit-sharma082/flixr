@@ -30,40 +30,44 @@ export function CompactList({
         return 'text-red-500';
     };
     const ITEMS = useMemo(() => {
-        return items.map((item) => {
-            if ('name' in item) {
-                // TV Show
-                const tvShow = item as TVShow;
-                return {
-                    id: tvShow.id,
-                    title: tvShow.name || tvShow.original_name || 'Untitled',
-                    poster: tvShow.poster_path,
-                    rating: tvShow.vote_average
-                        ? tvShow.vote_average.toFixed(1)
-                        : undefined,
-                    href: `/tv/${tvShow.id}`,
-                    released_on: tvShow.first_air_date,
-                    original_language: tvShow.original_language,
-                };
-            } else if ('title' in item) {
-                // Movie
-                const movie = item as Movie;
-                return {
-                    id: movie.id,
-                    title: movie.title || movie.original_title || 'Untitled',
-                    poster: movie.poster_path,
-                    rating: movie.vote_average
-                        ? movie.vote_average.toFixed(1)
-                        : undefined,
-                    href: `/movie/${movie.id}`,
-                    released_on: movie.release_date,
-                    original_language: movie.original_language,
-                };
-            } else {
-                // CompactItem
-                return item as CompactItem;
-            }
-        });
+        return (
+            items?.map((item) => {
+                if ('name' in item) {
+                    // TV Show
+                    const tvShow = item as TVShow;
+                    return {
+                        id: tvShow.id,
+                        title:
+                            tvShow.name || tvShow.original_name || 'Untitled',
+                        poster: tvShow.poster_path,
+                        rating: tvShow.vote_average
+                            ? tvShow.vote_average.toFixed(1)
+                            : undefined,
+                        href: `/tv/${tvShow.id}`,
+                        released_on: tvShow.first_air_date,
+                        original_language: tvShow.original_language,
+                    };
+                } else if ('title' in item) {
+                    // Movie
+                    const movie = item as Movie;
+                    return {
+                        id: movie.id,
+                        title:
+                            movie.title || movie.original_title || 'Untitled',
+                        poster: movie.poster_path,
+                        rating: movie.vote_average
+                            ? movie.vote_average.toFixed(1)
+                            : undefined,
+                        href: `/movie/${movie.id}`,
+                        released_on: movie.release_date,
+                        original_language: movie.original_language,
+                    };
+                } else {
+                    // CompactItem
+                    return item as CompactItem;
+                }
+            }) || []
+        );
     }, [items]);
 
     return (
@@ -110,13 +114,17 @@ export function CompactList({
                                     <Star
                                         className={cn(
                                             'w-3 h-3 fill-current',
-                                            getRatingColor(Number(item?.rating))
+                                            getRatingColor(
+                                                Number(item?.rating),
+                                            ),
                                         )}
                                     />
                                     <span
                                         className={cn(
                                             'text-xs',
-                                            getRatingColor(Number(item?.rating))
+                                            getRatingColor(
+                                                Number(item?.rating),
+                                            ),
                                         )}>
                                         {item?.rating}
                                     </span>
@@ -191,7 +199,7 @@ export function NumberedList({
                     <Link key={item.id} href={item.href} className='snap-start'>
                         <Card
                             className={cn(
-                                'flex flex-row group gap-0 min-w-44 md:min-w-60 bg-transparent border-none shadow-none aspect-[0.9] p-0'
+                                'flex flex-row group gap-0 min-w-44 md:min-w-60 bg-transparent border-none shadow-none aspect-[0.9] p-0',
                             )}>
                             {/* COLUMN */}
                             <div className='h-full p-0 max-w-1/3 flex flex-col justify-between items-end gap-4'>
@@ -204,16 +212,16 @@ export function NumberedList({
                                             className={cn(
                                                 'w-3 h-3 fill-current',
                                                 getRatingColor(
-                                                    item?.vote_average
-                                                )
+                                                    item?.vote_average,
+                                                ),
                                             )}
                                         />
                                         <span
                                             className={cn(
                                                 'text-xs font-medium',
                                                 getRatingColor(
-                                                    item?.vote_average
-                                                )
+                                                    item?.vote_average,
+                                                ),
                                             )}>
                                             {item?.vote_average?.toFixed(1)}
                                         </span>
@@ -234,7 +242,7 @@ export function NumberedList({
                                 )}
                                 <div
                                     className={cn(
-                                        'absolute bottom-0 left-0 right-0 p-3 transition-all duration-300 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 bg-gradient-to-t from-black/80 to-black/20'
+                                        'absolute bottom-0 left-0 right-0 p-3 transition-all duration-300 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 bg-gradient-to-t from-black/80 to-black/20',
                                     )}>
                                     <p className='text-xs text-gray-200 line-clamp-6 w-2/3'>
                                         {item.released_on}

@@ -69,7 +69,7 @@ export const TMDB_ROUTES = {
         episode: (
             tvId: number | string,
             seasonNumber: number | string,
-            episodeNumber: number | string
+            episodeNumber: number | string,
         ) => `/tv/${tvId}/season/${seasonNumber}/episode/${episodeNumber}`,
 
         // for lists for a TV show
@@ -127,7 +127,7 @@ export const TMDB_ROUTES = {
     configuration: () => `/configuration`,
     find: (externalId: string, externalSource: string) =>
         `/find/${encodeURIComponent(
-            externalId
+            externalId,
         )}?external_source=${encodeURIComponent(externalSource)}`,
 } as const;
 
@@ -147,7 +147,7 @@ export class TMDBClient {
     private async getCached<T>(
         key: string,
         fetcher: () => Promise<T>,
-        ttlSeconds?: number // for some cases we might want different TTL
+        ttlSeconds?: number, // for some cases we might want different TTL
     ): Promise<T> {
         const cached = await redisClient.get(key);
         if (cached) return JSON.parse(cached) as T;
@@ -172,7 +172,7 @@ export class TMDBClient {
 
             return resp.data;
         } catch (error: any) {
-            console.log('TMDB request error: ', error?.message ?? error);
+            console.log('TMDB request error: ', { error });
             throw error;
         }
     }
@@ -180,25 +180,25 @@ export class TMDBClient {
     async searchMulti(query: string, page = 1) {
         const key = this.cacheKey(`search:${query}:p:${page}`);
         return this.getCached(key, () =>
-            this.request('/search/multi', { query, page })
+            this.request('/search/multi', { query, page }),
         );
     }
 
     async getDetails(
         mediaType: 'movie' | 'tv',
         id: string | number,
-        append = 'credits,videos'
+        append = 'credits,videos',
     ) {
         const key = this.cacheKey(`${mediaType}:${id}:details`);
         return this.getCached(key, () =>
-            this.request(`/${mediaType}/${id}`, { append_to_response: append })
+            this.request(`/${mediaType}/${id}`, { append_to_response: append }),
         );
     }
 
     async getPopular(mediaType: 'movie' | 'tv', page = 1) {
         const key = this.cacheKey(`${mediaType}:popular:p:${page}`);
         return this.getCached(key, () =>
-            this.request(`/${mediaType}/popular`, { page })
+            this.request(`/${mediaType}/popular`, { page }),
         );
     }
 
@@ -210,7 +210,7 @@ export class TMDBClient {
             return this.getCached(
                 key,
                 () => this.request(path, params),
-                ttlSeconds
+                ttlSeconds,
             );
         } catch (error) {
             console.log('TMDB raw request error: ', error);
