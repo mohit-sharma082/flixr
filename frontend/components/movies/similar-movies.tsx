@@ -16,13 +16,12 @@ const SimilarMoviesSection = ({ movie }: MovieDetailsProps) => {
     const [movies, setMovies] = useState<Movie[]>([]);
     const [error, setError] = useState<any | null>(null);
 
-    console.log('Movie Details:', movie);
     const getSimilar = async () => {
         try {
             if (!movie.id) return [];
             const api = createApi();
             const res = await api.get('/api/movies/' + movie.id + '/similar');
-            console.log({ res });
+            // console.log({ res });
             return res?.data?.results ?? [];
         } catch (error: any) {
             console.log(

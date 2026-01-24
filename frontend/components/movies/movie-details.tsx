@@ -107,7 +107,7 @@ export function MovieDetails({ movie, reviews }: MovieDetailsProps) {
             </div>
 
             {/* Hero section with backdrop */}
-            <div className='fixed top-0 left-0 w-screen h-[40vh] md:h-[90vh] -z-10'>
+            <div className='fixed top-0 left-0 w-screen h-[35vh] md:h-[90vh] -z-10'>
                 <Image
                     src={backdropUrl || '/placeholder.svg'}
                     alt={movie.title}
@@ -116,7 +116,7 @@ export function MovieDetails({ movie, reviews }: MovieDetailsProps) {
                     className='object-cover fixed top-0 left-0 -z-10'
                 />
             </div>
-            <div className='relative h-[100vw]  sm:h-[70vh] w-full'>
+            <div className='relative h-[80vw]  md:h-[70vh] w-full'>
                 <div className='absolute inset-0 bg-black/40 z-10' />
                 {/* <Image
                         src={backdropUrl || '/placeholder.svg'}
@@ -126,9 +126,9 @@ export function MovieDetails({ movie, reviews }: MovieDetailsProps) {
                         className='object-cover sticky top-0 left-0'
                     /> */}
 
-                <div className='absolute bottom-0 left-0 right-0 p-6 z-20'>
+                <div className='absolute  bottom-0 left-0 right-0 p-6 z-20'>
                     <div className='container  mx-auto'>
-                        <div className='absolute inset-0 bg-gradient-to-t from-background to-transparent z-0' />
+                        <div className='absolute inset-0 bg-gradient-to-t from-background via-background md:via-background/50 to-transparent z-0' />
 
                         <div className=' flex flex-col md:flex-row gap-8 items-start md:items-end z-10 '>
                             <div className='hidden md:block relative h-[200px] w-[132px] sm:h-[300px] sm:w-[200px] xl:h-[400px] xl:w-[266px] rounded-lg overflow-hidden shadow-2xl flex-shrink-0 border-4 border-background'>
@@ -481,7 +481,13 @@ export function MovieDetails({ movie, reviews }: MovieDetailsProps) {
                                 <TabsContent value='media'>
                                     <Suspense fallback={<div>Loading...</div>}>
                                         <MediaTab
-                                            images={movie.images ?? { backdrops: [], logos: [], posters: [] }}
+                                            images={
+                                                movie.images ?? {
+                                                    backdrops: [],
+                                                    logos: [],
+                                                    posters: [],
+                                                }
+                                            }
                                             videos={movie.videos?.results || []}
                                         />
                                     </Suspense>
