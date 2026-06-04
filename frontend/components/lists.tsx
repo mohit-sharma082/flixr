@@ -78,8 +78,8 @@ export function CompactList({
                 <Link
                     key={item.id + '-' + idx}
                     href={item?.href ?? '/'}
-                    className='flex flex-col md:flex-row group border-2 border-transparent rounded hover:border-primary/5 '>
-                    <div className='md:w-20 md:h-30 group-hover:w-24 transition-all duration-200 shrink-0 bg-muted rounded group-hover:rounded-r-none overflow-hidden'>
+                    className='flex bg-background/30 flex-col md:flex-row group border-2 border-transparent rounded hover:border-primary/5 '>
+                    <div className='md:w-20 md:h-30  group-hover:w-24 transition-all duration-200 shrink-0 bg-muted rounded group-hover:rounded-r-none overflow-hidden'>
                         {item.poster && (
                             <img
                                 src={`https://image.tmdb.org/t/p/w185${item.poster}`}
@@ -149,7 +149,7 @@ export function NumberedList({
     items: TVShow[] | Movie[] | CompactItem[];
 }) {
     const ITEMS = useMemo(() => {
-        return items.map((item, index) => {
+        return items?.map((item, index) => {
             if ('name' in item) {
                 // TV Show
                 const tvShow = item as TVShow;
@@ -188,13 +188,13 @@ export function NumberedList({
                     number: index + 1,
                 };
             }
-        });
+        }) ?? []
     }, [items]);
     return (
         <section className='px-4 sm:px-6 lg:px-8 py-6'>
             <h2 className='text-2xl font-semibold mb-4'>{title}</h2>
 
-            <div className='flex  overflow-x-auto snap-x snap-mandatory'>
+            <div className='flex overflow-x-auto overflow-y-hidden snap-x snap-mandatory'>
                 {ITEMS.map((item) => (
                     <Link key={item.id} href={item.href} className='snap-start'>
                         <Card
