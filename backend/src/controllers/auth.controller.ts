@@ -13,6 +13,7 @@ const registerSchema = Joi.object({
 const loginSchema = Joi.object({
     email: Joi.string().email().required(),
     password: Joi.string().required(),
+    name: Joi.string().allow('', null).optional(),
 });
 
 export const register = async (req: Request, res: Response) => {
