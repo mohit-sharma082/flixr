@@ -7,7 +7,7 @@ import './globals.css';
 import ReduxProvider from '../providers/ReduxProvider';
 
 import { Toaster } from '@/components/ui/toaster';
-import { JetBrains_Mono, Handlee } from 'next/font/google';
+import { JetBrains_Mono, Plus_Jakarta_Sans } from 'next/font/google';
 import { Header } from '@/components/header';
 import { ThemeProvider } from '@/components/theme-provider';
 import ClickSpark from '@/components/reactbits/click-spark';
@@ -17,6 +17,11 @@ import { FloatingNavFAB } from '@/components/floating-nav';
 const jetBrainsMono = JetBrains_Mono({
     subsets: ['latin'],
     variable: '--font-jetbrains-mono',
+});
+
+const font = Plus_Jakarta_Sans({
+    subsets: ['latin'],
+    variable: '--font-plus-jakarta-sans',
 });
 
 export const metadata: Metadata = {
@@ -33,7 +38,7 @@ export default function RootLayout({
     return (
         <html lang='en' suppressHydrationWarning>
             <body
-                className={`font-sans antialiased ${jetBrainsMono.variable} ${jetBrainsMono.className}`}>
+                className={`font-sans antialiased ${font.variable} ${font.className}`}>
                 <ThemeProvider
                     attribute='class'
                     defaultTheme='system'

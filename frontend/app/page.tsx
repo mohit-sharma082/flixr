@@ -68,9 +68,10 @@ export default async function HomePage() {
     }
 
     const { movies, tv: shows, genres } = response;
+    
 
     return (
-        <main className='min-h-screen bg-background'>
+        <main className='min-h-screen bg-black'>
             {/* HERO */}
             <div className='pt-4'>
                 <HeroCarousel
@@ -84,7 +85,7 @@ export default async function HomePage() {
                 <h2 className='text-xl font-semibold'>Movies - Now Playing</h2>
 
                 <div className='flex items-stretch gap-4 overflow-x-scroll snap-x snap-mandatory'>
-                    {movies.nowPlaying.map((item) => (
+                    {movies?.nowPlaying?.map((item) => (
                         <MovieCard key={item.id} movie={item} index={0} />
                     ))}
                     <div className='w-20 p-8 bg-transparent h-full min-h-1/2'></div>
