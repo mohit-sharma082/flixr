@@ -1,65 +1,75 @@
 import { TVShow, Genre } from '@/lib/interfaces';
-import { DiscoverShell, TabDef } from '@/components/discover/discover-shell';
+import { DiscoverExplorer } from '@/components/discover/discover-explorer';
 
 export const metadata = {
-    title: 'TV Shows | Flixr',
-    description: 'Discover popular, top-rated, and currently airing TV shows',
+    title: 'Discover TV Shows | Flixr',
+    description: 'Filter and explore TV shows by genre, rating, year, and more',
 };
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
-async function fetchInitial(
-    path: string,
-): Promise<{ results: TVShow[]; total_pages: number }> {
+const FORWARD_KEYS = [
+    'sort_by', 'with_genres', 'without_genres', 'with_original_language',
+    'vote_average.gte', 'vote_average.lte', 'vote_count.gte',
+    'with_runtime.gte', 'with_runtime.lte',
+    'first_air_date_year', 'first_air_date.gte', 'first_air_date.lte',
+    'with_status', 'with_type',
+    'page',
+];
+
+function toQuery(sp: Record<string, string | string[] | undefined>) {
+    const qs = new URLSearchParams();
+    for (const key of FORWARD_KEYS) {
+        const v = sp[key];
+        if (typeof v === 'string' && v.trim() !== '') qs.set(key, v);
+    }
+    return qs.toString();
+}
+
+async function fetchDiscover(query: string) {
     try {
-        const res = await fetch(`${API_BASE}/api/tv${path}`, {
-            next: { revalidate: 3600 },
+        const res = await fetch(`${API_BASE}/api/tv/discover?${query}`, {
+            next: { revalidate: 1800 },
         });
-        if (!res.ok) return { results: [], total_pages: 1 };
-        const data = await res.json();
-        return { results: data.results ?? [], total_pages: data.total_pages ?? 1 };
+        if (!res.ok) return { results: [], total_pages: 1, page: 1 };
+        return await res.json();
     } catch {
-        return { results: [], total_pages: 1 };
+        return { results: [], total_pages: 1, page: 1 };
     }
 }
 
-async function fetchTVGenres(): Promise<Genre[]> {
+async function fetchGenres(): Promise<Genre[]> {
     try {
-        const res = await fetch(`${API_BASE}/api/common/genres`, {
+        const res = await fetch(`${API_BASE}/api/tv/genres`, {
             next: { revalidate: 86400 },
         });
         if (!res.ok) return [];
         const data = await res.json();
-        return data.data?.genres?.tv ?? [];
+        return data.genres ?? [];
     } catch {
         return [];
     }
 }
 
-const TABS: TabDef[] = [
-    { key: 'popular', label: 'Popular', apiPath: '/popular' },
-    { key: 'top_rated', label: 'Top Rated', apiPath: '/top_rated' },
-    { key: 'on_the_air', label: 'On The Air', apiPath: '/on_the_air' },
-    { key: 'airing_today', label: 'Airing Today', apiPath: '/airing_today' },
-];
-
-export default async function TVDiscoverPage() {
-    const [popular, genres] = await Promise.all([
-        fetchInitial('/popular?page=1'),
-        fetchTVGenres(),
+export default async function TVDiscoverPage({
+    searchParams,
+}: {
+    searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+    const sp = await searchParams;
+    const query = toQuery(sp);
+    const [initial, genres] = await Promise.all([
+        fetchDiscover(query),
+        fetchGenres(),
     ]);
 
-    const heroItem = popular.results[Math.floor(Math.random() * Math.min(6, popular.results.length))];
-
     return (
-        <DiscoverShell
+        <DiscoverExplorer
             mediaType='tv'
-            title='TV Shows'
-            subtitle="Stream the latest episodes, binge top-rated series, and never miss what's on air."
-            heroBackdrop={heroItem?.backdrop_path ?? null}
-            tabs={TABS}
             genres={genres}
-            initialData={popular}
+            initialResults={(initial.results ?? []) as TVShow[]}
+            initialPage={initial.page ?? 1}
+            initialTotalPages={initial.total_pages ?? 1}
         />
     );
 }

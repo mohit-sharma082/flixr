@@ -1,4 +1,5 @@
 import HeroCarousel from '@/components/hero-carousel';
+import { GenreRow } from '@/components/discover/genre-row';
 import { MovieCard } from '@/components/movies/movie-card';
 import dynamic from 'next/dynamic';
 import { createServerApi } from '@/lib/api';
@@ -42,7 +43,7 @@ type ReponseData = {
         onTheAir: TVShow[];
     };
     genres: {
-        movie: Genre[];
+        movies: Genre[];
         tv: Genre[];
     };
 };
@@ -81,6 +82,8 @@ export default async function HomePage() {
                 />
             </div>
 
+            <GenreRow title='Browse Movies by Genre' genres={genres.movies} basePath='/movie' />
+
             <section className='px-4 sm:px-6 lg:px-8 pt-6'>
                 <h2 className='text-xl font-semibold'>Movies - Now Playing</h2>
 
@@ -93,12 +96,15 @@ export default async function HomePage() {
             </section>
 
             <NumberedList title='Most Popular TV Shows' items={shows.popular} />
+
+            <GenreRow title='Browse TV by Genre' genres={genres.tv} basePath='/tv' />
+
             <NumberedList title='Most Popular Movies' items={movies.popular} />
+            <NumberedList title='Upcoming Movies' items={movies.upcoming} />
 
             <CompactList title='Shows - On The Air' items={shows.onTheAir} />
             <CompactList title='Top Rated Movies' items={movies.topRated} />
 
-            <NumberedList title='Upcoming Movies' items={movies.upcoming} />
             <NumberedList
                 title='Shows Airing Today'
                 items={shows.airingToday}

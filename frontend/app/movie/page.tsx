@@ -1,25 +1,39 @@
 import { Movie, Genre } from '@/lib/interfaces';
-import { DiscoverShell, TabDef } from '@/components/discover/discover-shell';
+import { DiscoverExplorer } from '@/components/discover/discover-explorer';
 
 export const metadata = {
-    title: 'Movies | Flixr',
-    description: 'Discover trending, popular, and top-rated movies',
+    title: 'Discover Movies | Flixr',
+    description: 'Filter and explore movies by genre, rating, year, and more',
 };
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
-async function fetchInitial(
-    path: string,
-): Promise<{ results: Movie[]; total_pages: number }> {
+const FORWARD_KEYS = [
+    'sort_by', 'with_genres', 'without_genres', 'with_original_language',
+    'vote_average.gte', 'vote_average.lte', 'vote_count.gte',
+    'with_runtime.gte', 'with_runtime.lte',
+    'primary_release_year', 'primary_release_date.gte', 'primary_release_date.lte',
+    'page',
+];
+
+function toQuery(sp: Record<string, string | string[] | undefined>) {
+    const qs = new URLSearchParams();
+    for (const key of FORWARD_KEYS) {
+        const v = sp[key];
+        if (typeof v === 'string' && v.trim() !== '') qs.set(key, v);
+    }
+    return qs.toString();
+}
+
+async function fetchDiscover(query: string) {
     try {
-        const res = await fetch(`${API_BASE}/api/movies${path}`, {
-            next: { revalidate: 3600 },
+        const res = await fetch(`${API_BASE}/api/movies/discover?${query}`, {
+            next: { revalidate: 1800 },
         });
-        if (!res.ok) return { results: [], total_pages: 1 };
-        const data = await res.json();
-        return { results: data.results ?? [], total_pages: data.total_pages ?? 1 };
+        if (!res.ok) return { results: [], total_pages: 1, page: 1 };
+        return await res.json();
     } catch {
-        return { results: [], total_pages: 1 };
+        return { results: [], total_pages: 1, page: 1 };
     }
 }
 
@@ -36,31 +50,25 @@ async function fetchGenres(): Promise<Genre[]> {
     }
 }
 
-const TABS: TabDef[] = [
-    { key: 'trending', label: 'Trending', apiPath: '/trending/week' },
-    { key: 'popular', label: 'Popular', apiPath: '/popular' },
-    { key: 'top_rated', label: 'Top Rated', apiPath: '/top_rated' },
-    { key: 'now_playing', label: 'Now Playing', apiPath: '/now_playing' },
-    { key: 'upcoming', label: 'Upcoming', apiPath: '/upcoming' },
-];
-
-export default async function MovieDiscoverPage() {
-    const [trending, genres] = await Promise.all([
-        fetchInitial('/trending/week?page=1'),
+export default async function MovieDiscoverPage({
+    searchParams,
+}: {
+    searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+    const sp = await searchParams;
+    const query = toQuery(sp);
+    const [initial, genres] = await Promise.all([
+        fetchDiscover(query),
         fetchGenres(),
     ]);
 
-    const heroItem = trending.results[Math.floor(Math.random() * Math.min(6, trending.results.length))];
-
     return (
-        <DiscoverShell
+        <DiscoverExplorer
             mediaType='movie'
-            title='Movies'
-            subtitle='Explore trending blockbusters, critically acclaimed classics, and everything in between.'
-            heroBackdrop={heroItem?.backdrop_path ?? null}
-            tabs={TABS}
             genres={genres}
-            initialData={trending}
+            initialResults={(initial.results ?? []) as Movie[]}
+            initialPage={initial.page ?? 1}
+            initialTotalPages={initial.total_pages ?? 1}
         />
     );
 }

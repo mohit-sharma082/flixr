@@ -73,7 +73,7 @@ export default async function CompanyPage({
         return (
             <main className='min-h-screen bg-background text-foreground'>
                 <div className='sticky top-0 z-40 bg-background/80 backdrop-blur-sm border-b border-border'>
-                    <div className='max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-3'>
+                    <div className='px-4 sm:px-6 lg:px-8 py-3'>
                         <Link href='/'>
                             <Button variant='ghost' size='sm'>
                                 <ArrowLeft className='w-4 h-4 mr-2' />
@@ -83,7 +83,7 @@ export default async function CompanyPage({
                     </div>
                 </div>
 
-                <div className='max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12'>
+                <div className='px-4 sm:px-6 lg:px-8 py-12'>
                     <CompanyHeader company={company.details} />
 
                     <div className='grid grid-cols-1 lg:grid-cols-3 gap-8 my-12'>

@@ -5,7 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 import { useRouter, usePathname } from 'next/navigation';
-import { Clapperboard, Home, TvMinimalPlay, User, X, Menu } from 'lucide-react';
+import { Clapperboard, Home, TvMinimalPlay, User, X, Menu, Search } from 'lucide-react';
+import { SearchCommand } from '@/components/search/search-command';
 
 const FAB_TIMEOUT_MS = 15000;
 
@@ -23,6 +24,7 @@ function isActive(pathname: string, routePath: string) {
 
 export function FloatingNavFAB() {
     const [open, setOpen] = useState(false);
+    const [searchOpen, setSearchOpen] = useState(false);
     const isMobile = useIsMobile();
     const router = useRouter();
     const pathname = usePathname();
@@ -59,6 +61,17 @@ export function FloatingNavFAB() {
     // Cleanup on unmount
     useEffect(() => () => cancelTimer(), []);
 
+    useEffect(() => {
+        const onKey = (e: KeyboardEvent) => {
+            if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+                e.preventDefault();
+                setSearchOpen((v) => !v);
+            }
+        };
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+    }, []);
+
     return (
         <>
             {/* Backdrop */}
@@ -85,6 +98,22 @@ export function FloatingNavFAB() {
 
                 {/* Nav Items — rendered above FAB, reversed so first item is closest to button */}
                 <AnimatePresence>
+                    {open && (
+                        <motion.button
+                            key='search'
+                            onClick={() => { setSearchOpen(true); handleClose(); }}
+                            className={cn(
+                                'cursor-pointer flex items-center w-fit font-semibold gap-3 rounded-full px-5 py-3 text-sm shadow-lg border-2',
+                                'bg-neutral-900 text-white/90 border-primary/10 hover:border-primary hover:px-6 transition-colors',
+                            )}
+                            initial={{ opacity: 0, scale: 0.85, y: 12 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.85, y: 12 }}
+                            transition={{ delay: routes.length * 0.05, duration: 0.18, ease: 'easeOut' }}>
+                            <Search className='w-4 h-4 shrink-0' />
+                            Search
+                        </motion.button>
+                    )}
                     {open &&
                         [...routes].reverse().map((item, i) => {
                             const active = isActive(pathname, item.path);
@@ -136,6 +165,8 @@ export function FloatingNavFAB() {
                     </motion.span>
                 </motion.button>
             </div>
+
+            <SearchCommand open={searchOpen} onOpenChange={setSearchOpen} />
         </>
     );
 }

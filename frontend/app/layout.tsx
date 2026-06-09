@@ -47,14 +47,16 @@ export default function RootLayout({
                     <ReduxProvider>
                         {/* <Header /> */}
                         <FloatingNavFAB />
-                        <ClickSpark
+                        {/* <ClickSpark
                             sparkColor='#fff'
                             sparkSize={10}
                             sparkRadius={15}
                             sparkCount={8}
                             duration={400}>
                             {children}
-                        </ClickSpark>
+                        </ClickSpark> */}
+
+                        {children}
                     </ReduxProvider>
                     <Analytics />
                     <Toaster />

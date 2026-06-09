@@ -275,7 +275,7 @@ export default function ProfilePage() {
                 <div className='absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-10%,rgba(255,255,255,0.08),transparent)] pointer-events-none' />
 
                 <div className='relative z-10 px-4 sm:px-6 lg:px-8 pt-28 pb-10'>
-                    <div className='max-w-5xl mx-auto'>
+                    <div>
                         {/* Identity row */}
                         <div className='flex flex-col sm:flex-row items-center sm:items-end gap-6 mb-10'>
                             <UserAvatar name={user?.name} email={user?.email} />
@@ -342,7 +342,7 @@ export default function ProfilePage() {
             </div>
 
             {/* ── Body ──────────────────────────────────────────────── */}
-            <div className='max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10'>
+            <div className='px-4 sm:px-6 lg:px-8 py-10'>
                 {reviews.length === 0 ? (
                     <EmptyState />
                 ) : (

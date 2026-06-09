@@ -226,7 +226,7 @@ export default function SeasonDetails({ season }: SeasonDetailsProps) {
                 <div className='absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent' />
 
                 {/* Content */}
-                <div className='relative z-10 h-full max-w-7xl mx-auto px-6 flex items-end pb-12'>
+                <div className='relative z-10 h-full px-4 sm:px-6 lg:px-8 flex items-end pb-12'>
                     <div className='flex flex-col sm:flex-row gap-8 w-full items-end'>
                         {/* Poster */}
                         {poster_path && (
@@ -286,7 +286,7 @@ export default function SeasonDetails({ season }: SeasonDetailsProps) {
             </section>
 
             {/* EPISODES SECTION */}
-            <section className='max-w-7xl mx-auto px-6 py-16'>
+            <section className='px-4 sm:px-6 lg:px-8 py-16'>
                 <div className='mb-8'>
                     <h2 className='text-3xl font-bold'>Episodes</h2>
                 </div>
@@ -300,7 +300,7 @@ export default function SeasonDetails({ season }: SeasonDetailsProps) {
 
             {/* CREW SECTION */}
             {season.credits && season.credits.cast.length > 0 && (
-                <section className='max-w-7xl mx-auto px-6 py-16 border-t border-border'>
+                <section className='px-4 sm:px-6 lg:px-8 py-16 border-t border-border'>
                     <div className='mb-8'>
                         <h2 className='text-3xl font-bold'>Cast</h2>
                     </div>
