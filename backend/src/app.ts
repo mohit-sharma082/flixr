@@ -34,6 +34,11 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
+app.use((req, res, next) => {
+    console.log(`~ ${req.method} ${req.path}`);
+    next();
+});
+
 // DB connect
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/tmdbapp';
 mongoose

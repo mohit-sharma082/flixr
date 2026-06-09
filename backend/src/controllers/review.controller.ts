@@ -27,7 +27,8 @@ export const createReview = async (req: AuthRequest, res: Response) => {
 };
 
 export const getReviewsForTmdb = async (req: Request, res: Response) => {
-    const { mediaType, tmdbId } = req.params;
+    const mediaType = req.params.mediaType as 'movie' | 'tv';
+    const tmdbId = req.params.tmdbId as string;
     const reviews = await Review.find({ tmdbId: +tmdbId, mediaType }).populate(
         'user',
         'name email'

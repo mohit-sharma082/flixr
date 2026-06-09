@@ -26,6 +26,8 @@ router.get('/top_rated', asyncHandler(tvCtrl.topRated));
 router.get('/on_the_air', asyncHandler(tvCtrl.onTheAir));
 router.get('/airing_today', asyncHandler(tvCtrl.airingToday));
 
+router.get('/discover', asyncHandler(tvCtrl.discover));
+router.get('/genres', asyncHandler(tvCtrl.genres));
 router.get('/:id', asyncHandler(tvCtrl.details));
 router.get('/:id/recommendations', asyncHandler(tvCtrl.recommendations));
 router.get('/:id/similar', asyncHandler(tvCtrl.similar));

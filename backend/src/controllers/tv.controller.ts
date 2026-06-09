@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { TMDB_ROUTES, tmdbClient } from '../services/tmdbClient';
+import { buildDiscoverParams } from '../utils/discoverParams';
 
 /**
  * TV controllers - thin logic, delegate TMDB fetch + caching to tmdbClient.
@@ -54,8 +55,19 @@ export const onTheAir = async (req: Request, res: Response) => {
     return res.json(data);
 };
 
+export const discover = async (req: Request, res: Response) => {
+    const params = buildDiscoverParams(req, 'tv');
+    const data = await tmdbClient.raw('/discover/tv', params);
+    return res.json(data);
+};
+
+export const genres = async (_req: Request, res: Response) => {
+    const data = await tmdbClient.raw('/genre/tv/list', {});
+    return res.json(data);
+};
+
 export const details = async (req: Request, res: Response) => {
-    const { id } = req.params;
+    const id = req.params.id as string;
     if (!id) return res.status(400).json({ error: 'Missing tv id' });
 
     // Append useful info by default

@@ -48,7 +48,8 @@ export const createComment = async (req: AuthRequest, res: Response) => {
 
 // list comments for a media item (paginated)
 export const listCommentsByMedia = async (req: Request, res: Response) => {
-    const { mediaType, tmdbId } = req.params;
+    const mediaType = req.params.mediaType as string;
+    const tmdbId = req.params.tmdbId as string;
     const page = Math.max(1, +(req.query.page || 1));
     const limit = Math.min(50, +(req.query.limit || 20));
     if (!['movie', 'tv'].includes(mediaType))

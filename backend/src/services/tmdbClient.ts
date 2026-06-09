@@ -162,12 +162,19 @@ export class TMDBClient {
         return result;
     }
 
-    private async request(path: string, params: QueryParams = {}) {
+    private async request(pathRoute: string, params: QueryParams = {}) {
         try {
-            const url = `${this.baseUrl}${path}`;
+            const fullParams = {
+                ...params,
+                api_key: this.apiKey,
+                adult: false,
+            };
+
+            const url = `${this.baseUrl}${pathRoute}`;
             console.log('TMDB Request URL: ', url, params);
             const resp = await axios.get(url, {
-                params: { ...params, api_key: this.apiKey, adult: false },
+                params: fullParams,
+                timeout: 20000,
             });
 
             return resp.data;
@@ -205,8 +212,9 @@ export class TMDBClient {
     // Expose a direct request in case controller needs a specific endpoint
     async raw(path: string, params: QueryParams = {}, ttlSeconds?: number) {
         try {
-            // console.log('TMDB Raw Request Path: ', path, params);
+            console.log('TMDB Raw Request Path: ', path, params);
             const key = this.cacheKey(`raw:${path}:${JSON.stringify(params)}`);
+
             return this.getCached(
                 key,
                 () => this.request(path, params),

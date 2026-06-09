@@ -69,7 +69,7 @@ export const getCompanyDetails = async (
     next: NextFunction
 ) => {
     try {
-        const { id } = req.params;
+        const id = req.params.id as string;
 
         if (!id) {
             return res.status(400).json({

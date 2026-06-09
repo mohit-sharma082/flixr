@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { TMDB_ROUTES, tmdbClient } from '../services/tmdbClient';
+import { buildDiscoverParams } from '../utils/discoverParams';
 import Review from '../models/Review';
 import mongoose from 'mongoose';
 
@@ -69,6 +70,7 @@ export const upcoming = async (req: Request, res: Response) => {
 
 export const trending = async (req: Request, res: Response) => {
     // /trending/movie/{time_window} where time_window is day or week
+    // console.log('Trending request with params:', req.params, 'and query:', req.query);
     const timeWindow = (req.params.time_window || 'day').toString();
     if (!['day', 'week'].includes(timeWindow))
         return res
@@ -78,29 +80,12 @@ export const trending = async (req: Request, res: Response) => {
     const data = await tmdbClient.raw(`/trending/movie/${timeWindow}`, {
         page,
     });
+    // console.log('Trending data fetched:', { results: data.results.length, page: data.page, total_pages: data.total_pages });
     return res.json(data);
 };
 
 export const discover = async (req: Request, res: Response) => {
-    // Forward common discover filters to TMDB (validate/whitelist as needed)
-    const page = parsePage(req.query.page);
-    const allowed: Record<string, any> = {
-        sort_by: req.query.sort_by,
-        with_genres: req.query.with_genres,
-        year: req.query.year,
-        'vote_average.gte': req.query['vote_average.gte'],
-        primary_release_year: req.query.primary_release_year,
-        with_keywords: req.query.with_keywords,
-        page,
-    };
-
-    // Remove undefined keys
-    const params: Record<string, any> = {};
-    Object.entries(allowed).forEach(([k, v]) => {
-        if (v !== undefined && v !== null && String(v).trim() !== '')
-            params[k] = v;
-    });
-
+    const params = buildDiscoverParams(req, 'movie');
     const data = await tmdbClient.raw('/discover/movie', params);
     return res.json(data);
 };
@@ -112,7 +97,7 @@ export const genres = async (_req: Request, res: Response) => {
 };
 
 export const details = async (req: Request, res: Response) => {
-    const { id } = req.params;
+    const id = req.params.id as string;
     if (!id) return res.status(400).json({ error: 'Missing movie id' });
     const append = (req.query.append as string) || 'credits,videos,images';
 
@@ -128,11 +113,11 @@ export const details = async (req: Request, res: Response) => {
 };
 
 export const tmdbReviews = async (req: Request, res: Response) => {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const page = parsePage(req.query.page) ?? 1;
     const data = await tmdbClient.raw(ROUTES.reviews(id), { page });
     return res.json(data);
-}
+};
 
 export const credits = async (req: Request, res: Response) => {
     const { id } = req.params;
@@ -182,7 +167,7 @@ export const images = async (req: Request, res: Response) => {
  * If you want to cache aggregate results in Redis, we can add that next.
  */
 export const aggregate = async (req: Request, res: Response) => {
-    const { id } = req.params;
+    const id = req.params.id as string;
     if (!id) return res.status(400).json({ error: 'Missing movie id' });
 
     // Validate id is numeric (TMDB ids are numbers)
