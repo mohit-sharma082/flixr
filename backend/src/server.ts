@@ -1,9 +1,19 @@
-import dotenv from 'dotenv';
-dotenv.config();
+import { config } from './config'; // MUST be first: loads .env and validates required secrets
+import mongoose from 'mongoose';
 import app from './app';
 
-const PORT = process.env.PORT || 4000;
+async function start() {
+    try {
+        await mongoose.connect(config.mongoUri);
+        console.log('MongoDB connected');
+    } catch (err) {
+        console.error('MongoDB connection error:', err);
+        process.exit(1);
+    }
 
-app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-});
+    app.listen(config.port, () => {
+        console.log(`Server running on http://localhost:${config.port}`);
+    });
+}
+
+start();

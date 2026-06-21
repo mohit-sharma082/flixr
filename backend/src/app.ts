@@ -3,6 +3,7 @@ import helmet from 'helmet';
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
 import mongoose from 'mongoose';
+import { config } from './config';
 import { redisClient } from './cache/redisClient';
 
 import authRoutes from './routes/auth';
@@ -23,7 +24,12 @@ app.use(helmet());
 app.use(express.json());
 app.use(
     cors({
-        origin: true, // set more strict origins in production
+        origin(origin, callback) {
+            // Allow non-browser clients (curl, server-to-server, native apps) that send no Origin.
+            if (!origin) return callback(null, true);
+            // Allowlist driven by CORS_ORIGINS env (comma-separated); defaults to localhost:3000 in dev.
+            return callback(null, config.corsOrigins.includes(origin));
+        },
         credentials: true,
     })
 );
@@ -39,12 +45,7 @@ app.use((req, res, next) => {
     next();
 });
 
-// DB connect
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/tmdbapp';
-mongoose
-    .connect(MONGO_URI)
-    .then(() => console.log('MongoDB connected'))
-    .catch((err) => console.error('MongoDB connection error:', err));
+// Mongo is connected in server.ts (and gates app.listen). Redis connects lazily below.
 
 // Redis connect
 redisClient.on('connect', () => console.log('Redis client connected'));
@@ -66,6 +67,16 @@ app.use('/api/reviews', reviewRoutes);
 app.get('/', (req, res) =>
     res.json({ ok: true, message: 'TMDB community API' })
 );
+
+// Readiness/liveness probe: 200 only when MongoDB is connected.
+app.get('/health', (req, res) => {
+    const dbConnected = mongoose.connection.readyState === 1; // 1 = connected
+    res.status(dbConnected ? 200 : 503).json({
+        ok: dbConnected,
+        db: dbConnected ? 'connected' : 'disconnected',
+        uptime: process.uptime(),
+    });
+});
 
 app.use(errorHandler);
 

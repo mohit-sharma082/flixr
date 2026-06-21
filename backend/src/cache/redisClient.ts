@@ -5,7 +5,7 @@ const REDIS_PORT = +(process.env.REDIS_PORT || 6379);
 export const redisClient = new Redis({
     host: REDIS_HOST,
     port: REDIS_PORT,
-    // password: '7Znv?bZ391k%'
+    ...(process.env.REDIS_PASSWORD ? { password: process.env.REDIS_PASSWORD } : {}),
 });
 
 // helper wrappers if needed can be added here
