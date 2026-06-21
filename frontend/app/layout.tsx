@@ -12,6 +12,7 @@ import { Header } from '@/components/header';
 import { ThemeProvider } from '@/components/theme-provider';
 import ClickSpark from '@/components/reactbits/click-spark';
 import { FloatingNavFAB } from '@/components/floating-nav';
+import { Footer } from '@/components/footer';
 
 // Initialize fonts
 const jetBrainsMono = JetBrains_Mono({
@@ -57,6 +58,7 @@ export default function RootLayout({
                         </ClickSpark> */}
 
                         {children}
+                        <Footer />
                     </ReduxProvider>
                     <Analytics />
                     <Toaster />
