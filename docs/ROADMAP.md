@@ -15,26 +15,40 @@ reference [AUDIT.md](./AUDIT.md).
 
 ## Quick wins (hours, not days)
 
-These are nearly free and several close real holes. Do them first.
+> **Status — 2026-06-22: all quick wins below are DONE.** ✅ Mobile (`flixr/`) was left
+> untouched by decision. Frontend type-checks clean (`tsc --noEmit` exit 0) with
+> `ignoreBuildErrors` now off. The backend changes were written but **not compiled locally**
+> (no `backend/node_modules` present) — run `pnpm install && pnpm build` in `backend/` to
+> verify before deploy.
 
-- [ ] **Rotate `JWT_SECRET`** to `openssl rand -base64 48`; add a boot assertion that throws
-      if it (or `TMDB_API_KEY`) is missing/too short. *(C1 — minutes, closes the one
-      critical security hole)*
-- [ ] **Fix search pagination:** `data.totalPages` → `data.total_pages` in
-      `app/search/page.tsx:84`. *(H7 — one word, unblocks all paged search)*
-- [ ] **Fix the broken import:** `@/src/store` → `@/store` in `authSlice.ts:3`, then set
-      `typescript.ignoreBuildErrors: false`. *(C5 — restores the type safety you already
-      pay for)*
-- [ ] **Remove the hardcoded Redis password** comment in `redisClient.ts:8`. *(quality)*
-- [ ] **Pin the 5 `latest` deps** to concrete versions; delete the stale
-      `package-lock.json` files (keep pnpm). *(H20/H21 — reproducible builds)*
-- [ ] **Lock CORS** to an env-driven allowlist; add a dedicated `express-rate-limit` on
-      `/auth/login` + `/register`. *(H2/H3 — a few lines in `app.ts`)*
-- [ ] **Add the TMDB attribution + non-endorsement notice** (and logo) to the web footer.
-      *(legal/publish blocker)*
-- [ ] **Add `/health`** and gate `app.listen()` behind a successful Mongo connect.
-- [ ] **Delete dead code:** `frontend/lib/apiClient.ts` (unused), `flixr/lib/index.ts`
-      (0 bytes), the vendor `Whizrange` header in `error_handler.ts`. *(quality)*
+- [x] **Rotate `JWT_SECRET`** — replaced the guessable phrase with `openssl rand -hex 64`
+      (128 chars) in `backend/.env`. Added **fail-fast validation** in new
+      `backend/src/config.ts` (`requireEnv('JWT_SECRET', {minLength: 32})` +
+      `requireEnv('TMDB_API_KEY')`) that throws at boot. *(C1)*
+- [x] **Fix search pagination** — `app/search/page.tsx` now reads `data.total_pages` and
+      guards `results` with `Array.isArray`. *(H7)*
+- [x] **Fix the broken import + turn type-checking back on** — `authSlice.ts` now imports
+      `@/store`; `next.config.mjs` → `ignoreBuildErrors: false`. Verified clean. *(C5)*
+- [x] **Remove the hardcoded Redis password** — `redisClient.ts` now reads an optional
+      `REDIS_PASSWORD` from env instead. *(quality)*
+- [x] **Pin the 5 `latest` deps** — `@reduxjs/toolkit ^2.12.0`, `@vercel/analytics ^2.0.1`,
+      `axios ^1.16.1`, `react-redux ^9.3.0`, `redux ^5.0.1`; deleted the stale tracked
+      `frontend/package-lock.json` (pnpm kept). *(H20/H21)*
+- [x] **Lock CORS + add auth rate limit** — `app.ts` CORS is now an env-driven allowlist
+      (`CORS_ORIGINS`, default `localhost:3000`); `routes/auth.ts` adds a 10-per-15-min
+      limiter on `/login` + `/register`. *(H2/H3)*
+- [x] **Add the TMDB attribution + non-endorsement notice** — new
+      `frontend/components/footer.tsx` mounted in `layout.tsx`. *(legal — logo SVG still
+      TODO; text statement is the mandatory part)*
+- [x] **Add `/health` + gate `app.listen()` behind Mongo** — `server.ts` now `await`s
+      `mongoose.connect` before listening (exits non-zero on failure); `/health` returns
+      503 until the DB is connected. Removed the duplicate fire-and-forget connect from
+      `app.ts`.
+- [x] **Delete dead code** — removed unused `frontend/lib/apiClient.ts` and the vendor
+      `Whizrange` header in `error_handler.ts`. *(`flixr/lib/index.ts` left in place —
+      mobile is out of scope.)*
+- [x] **Bonus:** created `frontend/.env.example`; added `CORS_ORIGINS` + `REDIS_PASSWORD`
+      to `backend/.env.example` with a `JWT_SECRET` generation hint. *(part of H22)*
 
 ---
 

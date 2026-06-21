@@ -41,6 +41,7 @@ from a 6–7.
 | [PROJECT_IDEA.md](./PROJECT_IDEA.md) | The product thesis, competitive landscape, portfolio-vs-product framing, the sharpest version |
 | [DISCUSSION.md](./DISCUSSION.md) | A four-voice engineering debate (Shipper / Architect / Strategist / Skeptic) + moderated synthesis |
 | [ROADMAP.md](./ROADMAP.md) | Quick wins, 30/90-day plan, prioritized backlog |
+| [TO_DISCUSS.md](./TO_DISCUSS.md) | 🗣️ Proposals parking lot — installable skills (skills.sh), build subagents, and a `reality-critic` proposal. Nothing decided yet. |
 
 ## How to read this
 
