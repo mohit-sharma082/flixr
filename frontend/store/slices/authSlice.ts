@@ -1,6 +1,6 @@
 // src/store/slices/authSlice.ts
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import type { RootState } from '@/src/store'; // adjust path if needed
+import type { RootState } from '@/store';
 
 export type User = {
     id: string;

@@ -80,8 +80,8 @@ async function searchMulti(
 
         const data = await response.json();
         return {
-            results: data.results || data,
-            totalPages: data.totalPages || 1,
+            results: Array.isArray(data.results) ? data.results : [],
+            totalPages: data.total_pages || 1, // TMDB/backend use snake_case
         };
     } catch (error) {
         console.error('Error searching movies:', error);
