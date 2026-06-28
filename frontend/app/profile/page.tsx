@@ -19,11 +19,11 @@ import {
 import { Badge } from '@/components/ui/badge';
 
 interface UserReview {
-    id: string;
-    movieId: number;
-    movieTitle: string;
+    _id: string;
+    tmdbId: number;
+    mediaType: string;
     rating: number;
-    comment: string;
+    content: string;
     createdAt: string;
 }
 
@@ -115,48 +115,56 @@ function RatingBar({
 }
 
 function ReviewCard({ review }: { review: UserReview }) {
-    return (
-        <Link href={`/movie/${review.movieId}`}>
-            <article className='group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 hover:bg-white/8 hover:border-white/20 transition-all duration-300 p-5'>
-                <div className='flex items-start justify-between gap-4 mb-3'>
-                    <h3 className='font-semibold text-base leading-snug group-hover:text-white transition-colors line-clamp-2 flex-1 text-white/90'>
-                        {review.movieTitle}
-                    </h3>
-                    <div
-                        className={cn(
-                            'flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-sm font-bold shrink-0',
-                            getRatingBadgeClass(review.rating)
-                        )}>
-                        <Star className='h-3 w-3 fill-current' />
-                        <span>{review.rating}/10</span>
-                    </div>
+    const isMovie = review.mediaType === 'movie';
+
+    const card = (
+        <article className='group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 hover:bg-white/8 hover:border-white/20 transition-all duration-300 p-5'>
+            <div className='flex items-start justify-between gap-4 mb-3'>
+                <h3 className='font-semibold text-base leading-snug group-hover:text-white transition-colors line-clamp-2 flex-1 text-white/90'>
+                    {isMovie ? `Movie #${review.tmdbId}` : `Title #${review.tmdbId}`}
+                </h3>
+                <div
+                    className={cn(
+                        'flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-sm font-bold shrink-0',
+                        getRatingBadgeClass(review.rating)
+                    )}>
+                    <Star className='h-3 w-3 fill-current' />
+                    <span>{review.rating}/10</span>
                 </div>
+            </div>
 
-                {review.comment && (
-                    <p className='text-sm text-white/50 leading-relaxed line-clamp-3 mb-4'>
-                        {review.comment}
-                    </p>
-                )}
+            {review.content && (
+                <p className='text-sm text-white/50 leading-relaxed line-clamp-3 mb-4'>
+                    {review.content}
+                </p>
+            )}
 
-                <div className='flex items-center justify-between'>
-                    <div className='flex items-center gap-1.5 text-xs text-white/30'>
-                        <Calendar className='h-3 w-3' />
-                        <span>
-                            {new Date(review.createdAt).toLocaleDateString(
-                                'en-US',
-                                {
-                                    year: 'numeric',
-                                    month: 'short',
-                                    day: 'numeric',
-                                }
-                            )}
-                        </span>
-                    </div>
+            <div className='flex items-center justify-between'>
+                <div className='flex items-center gap-1.5 text-xs text-white/30'>
+                    <Calendar className='h-3 w-3' />
+                    <span>
+                        {new Date(review.createdAt).toLocaleDateString(
+                            'en-US',
+                            {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric',
+                            }
+                        )}
+                    </span>
+                </div>
+                {isMovie && (
                     <ArrowRight className='h-4 w-4 text-white/20 group-hover:text-white/50 group-hover:translate-x-1 transition-all duration-200' />
-                </div>
-            </article>
-        </Link>
+                )}
+            </div>
+        </article>
     );
+
+    if (isMovie) {
+        return <Link href={`/movie/${review.tmdbId}`}>{card}</Link>;
+    }
+
+    return card;
 }
 
 function LoadingSkeleton() {
@@ -222,10 +230,10 @@ export default function ProfilePage() {
         const fetchUserReviews = async () => {
             try {
                 const api = createApi();
-                const response = await api.get(
-                    '/api/reviews?userId=' + user?.id
+                const response = await api.get('/api/reviews/mine');
+                setReviews(
+                    Array.isArray(response.data) ? response.data : []
                 );
-                setReviews(response.data || []);
             } catch {
                 // silently degrade — empty state handles it
             } finally {
@@ -234,7 +242,7 @@ export default function ProfilePage() {
         };
 
         fetchUserReviews();
-    }, [token, user, router]);
+    }, [token, router]);
 
     const stats = useMemo(() => {
         const total = reviews.length;
@@ -412,7 +420,7 @@ export default function ProfilePage() {
                             <div className='space-y-3'>
                                 {reviews.map((review) => (
                                     <ReviewCard
-                                        key={review.id}
+                                        key={review._id}
                                         review={review}
                                     />
                                 ))}

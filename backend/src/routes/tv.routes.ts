@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { asyncHandler } from '../utils/asyncHandler';
 import * as tvCtrl from '../controllers/tv.controller';
+import { searchLimiter } from '../middleware/rateLimiters';
 
 const router = Router();
 
@@ -20,13 +21,13 @@ const router = Router();
  * - /api/tv/:id/season/:season_number
  */
 
-router.get('/search', asyncHandler(tvCtrl.search));
+router.get('/search', searchLimiter, asyncHandler(tvCtrl.search));
 router.get('/popular', asyncHandler(tvCtrl.popular));
 router.get('/top_rated', asyncHandler(tvCtrl.topRated));
 router.get('/on_the_air', asyncHandler(tvCtrl.onTheAir));
 router.get('/airing_today', asyncHandler(tvCtrl.airingToday));
 
-router.get('/discover', asyncHandler(tvCtrl.discover));
+router.get('/discover', searchLimiter, asyncHandler(tvCtrl.discover));
 router.get('/genres', asyncHandler(tvCtrl.genres));
 router.get('/:id', asyncHandler(tvCtrl.details));
 router.get('/:id/recommendations', asyncHandler(tvCtrl.recommendations));

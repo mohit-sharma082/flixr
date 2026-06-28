@@ -1,13 +1,14 @@
 import { Router } from 'express';
 import { asyncHandler } from '../utils/asyncHandler';
 import * as movieCtrl from '../controllers/movie.controller';
+import { searchLimiter } from '../middleware/rateLimiters';
 
 const router = Router();
 
 /**
  * Movie routes
  */
-router.get('/search', asyncHandler(movieCtrl.search));
+router.get('/search', searchLimiter, asyncHandler(movieCtrl.search));
 router.get('/popular', asyncHandler(movieCtrl.popular));
 router.get('/top_rated', asyncHandler(movieCtrl.topRated));
 router.get('/now_playing', asyncHandler(movieCtrl.nowPlaying));
@@ -16,7 +17,7 @@ router.get('/upcoming', asyncHandler(movieCtrl.upcoming));
 router.get('/trending/', asyncHandler(movieCtrl.trending));
 router.get('/trending/:time_window', asyncHandler(movieCtrl.trending));
 
-router.get('/discover', asyncHandler(movieCtrl.discover));
+router.get('/discover', searchLimiter, asyncHandler(movieCtrl.discover));
 router.get('/genres', asyncHandler(movieCtrl.genres));
 
 router.get('/:id', asyncHandler(movieCtrl.details));

@@ -26,6 +26,13 @@ export const createReview = async (req: AuthRequest, res: Response) => {
     res.json(review);
 };
 
+export const getMyReviews = async (req: AuthRequest, res: Response) => {
+    const reviews = await Review.find({ user: req.user._id }).sort({
+        createdAt: -1,
+    });
+    res.json(reviews);
+};
+
 export const getReviewsForTmdb = async (req: Request, res: Response) => {
     const mediaType = req.params.mediaType as 'movie' | 'tv';
     const tmdbId = req.params.tmdbId as string;

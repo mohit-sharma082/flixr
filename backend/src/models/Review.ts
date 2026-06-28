@@ -20,4 +20,9 @@ const ReviewSchema = new Schema<IReview>(
     { timestamps: true }
 );
 
+// Hot path: detail pages query/sort reviews by {tmdbId, mediaType}; index it to avoid collection scans.
+ReviewSchema.index({ tmdbId: 1, mediaType: 1, createdAt: -1 });
+// Enforce one review per user per title (uncomment if that's the intended product rule):
+// ReviewSchema.index({ user: 1, tmdbId: 1, mediaType: 1 }, { unique: true });
+
 export default mongoose.model<IReview>('Review', ReviewSchema);

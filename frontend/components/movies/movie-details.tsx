@@ -1,6 +1,6 @@
 'use client';
 
-import { lazy, Suspense, useMemo, useState } from 'react';
+import { lazy, Suspense } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -31,6 +31,7 @@ const CastAndCrewTab = lazy(() => import('../cast-crew.tab'));
 const MediaTab = lazy(() => import('../media.tab'));
 import SimilarMoviesSection from './similar-movies';
 import ReviewsGrid from '../reviews-grid';
+import FlixrReviews from './flixr-reviews';
 
 interface MovieDetailsProps {
     movie: Movie;
@@ -38,8 +39,9 @@ interface MovieDetailsProps {
 }
 
 export function MovieDetails({ movie, reviews }: MovieDetailsProps) {
-    const [isFavorite, setIsFavorite] = useState(false);
-    const [isBookmarked, setIsBookmarked] = useState(false);
+    // v1: Favorites/Watchlist are decorative-only and intentionally hidden.
+    // const [isFavorite, setIsFavorite] = useState(false);
+    // const [isBookmarked, setIsBookmarked] = useState(false);
 
     const releaseDate = movie.release_date
         ? new Date(movie.release_date).toLocaleDateString('en-US', {
@@ -232,6 +234,7 @@ export function MovieDetails({ movie, reviews }: MovieDetailsProps) {
                                 </div>
 
                                 <div className='flex gap-2 mt-4'>
+                                    {/* v1: Favorites/Watchlist hidden (decorative only).
                                     <Button
                                         variant='outline'
                                         size='icon'
@@ -279,6 +282,7 @@ export function MovieDetails({ movie, reviews }: MovieDetailsProps) {
                                                 : 'Add to watchlist'}
                                         </span>
                                     </Button>
+                                    */}
 
                                     <Button
                                         variant='outline'
@@ -515,7 +519,22 @@ export function MovieDetails({ movie, reviews }: MovieDetailsProps) {
                             <SimilarMoviesSection movie={movie} />
                         </div>
                     </div>
-                    <ReviewsGrid reviews={reviews || []} />
+                    {/* Flixr first-party community reviews (ours) */}
+                    <FlixrReviews movieId={movie.id} />
+
+                    <Separator className='my-8' />
+
+                    {/* Reviews sourced from TMDB */}
+                    {reviews && reviews.length > 0 && (
+                        <section aria-labelledby='tmdb-reviews-heading'>
+                            <h2
+                                id='tmdb-reviews-heading'
+                                className='text-2xl font-bold mb-2'>
+                                Reviews from TMDB
+                            </h2>
+                            <ReviewsGrid reviews={reviews} />
+                        </section>
+                    )}
                     <div className='h-20'></div>
                 </div>
             </div>

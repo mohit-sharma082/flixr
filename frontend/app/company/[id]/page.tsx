@@ -64,7 +64,6 @@ export default async function CompanyPage({
         };
 
         const company: CompanyDetails = await fetchCompanyDetails();
-        console.log('Company Details:', company);
 
         if (!company) {
             return <EmptyState message='Company not found.' />;

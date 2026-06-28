@@ -147,13 +147,10 @@ export const deleteComment = async (req: AuthRequest, res: Response) => {
     const comment = await Comment.findById(id);
     if (!comment) return res.status(404).json({ error: 'Comment not found' });
 
-    // admin check placeholder: req.user.isAdmin?
+    // Owner-only: the User model has no roles yet, so there is no admin override.
+    // Add a role/isAdmin field on User and reinstate an admin check here when moderation lands.
     const isOwner = comment.user.toString() === req.user._id.toString();
-    const isAdmin =
-        req.user && (req.user.role === 'admin' || req.user.isAdmin === true); // adjust to your User model
-
-    if (!isOwner && !isAdmin)
-        return res.status(403).json({ error: 'Not allowed' });
+    if (!isOwner) return res.status(403).json({ error: 'Not allowed' });
 
     // soft delete for moderation history
     comment.deleted = true;

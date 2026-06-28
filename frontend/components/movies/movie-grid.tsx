@@ -23,10 +23,7 @@ export function MovieGrid({ movies }: MovieGridProps) {
             </div>
         );
     } catch (error) {
-        console.log(
-            'Error in MovieGrid:',
-            JSON.stringify({ error, movies }, null, 4)
-        );
+        console.error('Error in MovieGrid:', error);
         return (
             <div className='text-center py-12 text-red-500'>
                 Error loading movies

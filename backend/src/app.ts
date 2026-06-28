@@ -21,18 +21,29 @@ import errorHandler from './utils/error_handler';
 const app = express();
 
 app.use(helmet());
-app.use(express.json());
+
+// CORS: enforce the CORS_ORIGINS allowlist in production; in dev, also allow any
+// localhost/127.0.0.1 origin so the Next dev server (any port) works without config.
 app.use(
     cors({
         origin(origin, callback) {
-            // Allow non-browser clients (curl, server-to-server, native apps) that send no Origin.
+            // Non-browser clients (curl, server-to-server, RSC fetch) send no Origin.
             if (!origin) return callback(null, true);
-            // Allowlist driven by CORS_ORIGINS env (comma-separated); defaults to localhost:3000 in dev.
-            return callback(null, config.corsOrigins.includes(origin));
+            if (config.corsOrigins.includes(origin)) return callback(null, true);
+            if (
+                !config.isProd &&
+                /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)
+            ) {
+                return callback(null, true);
+            }
+            // Disallowed: omit CORS headers so the browser blocks it (request still completes).
+            return callback(null, false);
         },
         credentials: true,
     })
 );
+
+app.use(express.json({ limit: '1mb' }));
 
 const limiter = rateLimit({
     windowMs: 60 * 1000,

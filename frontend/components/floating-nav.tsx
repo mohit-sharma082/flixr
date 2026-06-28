@@ -2,11 +2,13 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useSelector, useDispatch } from 'react-redux';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 import { useRouter, usePathname } from 'next/navigation';
-import { Clapperboard, Home, TvMinimalPlay, User, X, Menu, Search } from 'lucide-react';
+import { Clapperboard, Home, TvMinimalPlay, User, X, Menu, Search, LogIn, UserPlus, LogOut } from 'lucide-react';
 import { SearchCommand } from '@/components/search/search-command';
+import { selectToken, selectCurrentUser, logout } from '@/store/slices/authSlice';
 
 const FAB_TIMEOUT_MS = 15000;
 
@@ -28,6 +30,9 @@ export function FloatingNavFAB() {
     const isMobile = useIsMobile();
     const router = useRouter();
     const pathname = usePathname();
+    const dispatch = useDispatch();
+    const token = useSelector(selectToken);
+    const user = useSelector(selectCurrentUser);
     const timerRef = useRef<NodeJS.Timeout | null>(null);
 
     const startCloseTimer = () => {
@@ -51,6 +56,17 @@ export function FloatingNavFAB() {
 
     const handleInteraction = () => {
         if (open) startCloseTimer();
+    };
+
+    const handleNavigate = (path: string) => {
+        router.push(path);
+        handleClose();
+    };
+
+    const handleLogout = () => {
+        dispatch(logout());
+        handleClose();
+        router.push('/');
     };
 
     // Cancel timer and close menu when route changes
@@ -98,6 +114,72 @@ export function FloatingNavFAB() {
 
                 {/* Nav Items — rendered above FAB, reversed so first item is closest to button */}
                 <AnimatePresence>
+                    {/* Auth affordances — top of the stack (furthest from FAB) */}
+                    {open && !token && (
+                        <motion.button
+                            key='register'
+                            onClick={() => handleNavigate('/auth/register')}
+                            className={cn(
+                                'cursor-pointer flex items-center w-fit font-semibold gap-3 rounded-full px-5 py-3 text-sm shadow-lg border-2',
+                                'bg-neutral-900 text-white/90 border-primary/10 hover:border-primary hover:px-6 transition-colors',
+                            )}
+                            initial={{ opacity: 0, scale: 0.85, y: 12 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.85, y: 12 }}
+                            transition={{ delay: (routes.length + 2) * 0.05, duration: 0.18, ease: 'easeOut' }}>
+                            <UserPlus className='w-4 h-4 shrink-0' />
+                            Register
+                        </motion.button>
+                    )}
+                    {open && !token && (
+                        <motion.button
+                            key='signin'
+                            onClick={() => handleNavigate('/auth/login')}
+                            className={cn(
+                                'cursor-pointer flex items-center w-fit font-semibold gap-3 rounded-full px-5 py-3 text-sm shadow-lg border-2',
+                                'bg-neutral-900 text-white/90 border-primary/10 hover:border-primary hover:px-6 transition-colors',
+                            )}
+                            initial={{ opacity: 0, scale: 0.85, y: 12 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.85, y: 12 }}
+                            transition={{ delay: (routes.length + 1) * 0.05, duration: 0.18, ease: 'easeOut' }}>
+                            <LogIn className='w-4 h-4 shrink-0' />
+                            Sign in
+                        </motion.button>
+                    )}
+                    {open && token && (
+                        <motion.button
+                            key='logout'
+                            onClick={handleLogout}
+                            className={cn(
+                                'cursor-pointer flex items-center w-fit font-semibold gap-3 rounded-full px-5 py-3 text-sm shadow-lg border-2',
+                                'bg-neutral-900 text-white/90 border-primary/10 hover:border-primary hover:px-6 transition-colors',
+                            )}
+                            initial={{ opacity: 0, scale: 0.85, y: 12 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.85, y: 12 }}
+                            transition={{ delay: (routes.length + 2) * 0.05, duration: 0.18, ease: 'easeOut' }}>
+                            <LogOut className='w-4 h-4 shrink-0' />
+                            Logout
+                        </motion.button>
+                    )}
+                    {open && token && (
+                        <motion.div
+                            key='account'
+                            className={cn(
+                                'flex items-center w-fit max-w-[16rem] font-semibold gap-3 rounded-full px-5 py-3 text-sm shadow-lg border-2',
+                                'bg-neutral-800 text-white/90 border-primary/20',
+                            )}
+                            initial={{ opacity: 0, scale: 0.85, y: 12 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.85, y: 12 }}
+                            transition={{ delay: (routes.length + 1) * 0.05, duration: 0.18, ease: 'easeOut' }}>
+                            <User className='w-4 h-4 shrink-0' />
+                            <span className='truncate'>
+                                {user?.name || user?.email || 'Account'}
+                            </span>
+                        </motion.div>
+                    )}
                     {open && (
                         <motion.button
                             key='search'

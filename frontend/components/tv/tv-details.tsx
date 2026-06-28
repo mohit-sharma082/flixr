@@ -36,8 +36,9 @@ interface TVDetailsProps {
 }
 
 export function TVDetails({ show, reviews }: TVDetailsProps) {
-    const [isFavorite, setIsFavorite] = useState(false);
-    const [isBookmarked, setIsBookmarked] = useState(false);
+    // Favorites/Watchlist are deferred for v1 — decorative-only, no backend wiring.
+    // const [isFavorite, setIsFavorite] = useState(false);
+    // const [isBookmarked, setIsBookmarked] = useState(false);
 
     const firstAirDate = show.first_air_date
         ? new Date(show.first_air_date).toLocaleDateString('en-US', {
@@ -231,6 +232,7 @@ export function TVDetails({ show, reviews }: TVDetailsProps) {
                                 </div>
 
                                 <div className='flex gap-2 mt-4'>
+                                    {/* Favorites/Watchlist deferred for v1 — hidden until backend wiring exists.
                                     <Button
                                         variant='outline'
                                         size='icon'
@@ -278,6 +280,7 @@ export function TVDetails({ show, reviews }: TVDetailsProps) {
                                                 : 'Add to watchlist'}
                                         </span>
                                     </Button>
+                                    */}
 
                                     <Button
                                         variant='outline'

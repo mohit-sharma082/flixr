@@ -7,6 +7,38 @@ const CACHE_TTL = +(process.env.CACHE_TTL_SECONDS || 3600); // default 1 hour
 
 type QueryParams = Record<string, any>;
 
+// TMDB rejects page > 500; clamp untrusted input to a valid integer in [1, 500]
+// before it reaches upstream (audit H1).
+const TMDB_MIN_PAGE = 1;
+const TMDB_MAX_PAGE = 500;
+
+export function clampPage(raw: unknown): number {
+    const n = Math.trunc(Number(raw));
+    if (!Number.isFinite(n) || n < TMDB_MIN_PAGE) return TMDB_MIN_PAGE;
+    if (n > TMDB_MAX_PAGE) return TMDB_MAX_PAGE;
+    return n;
+}
+
+// Only these append_to_response sub-requests are allowed through to TMDB; any
+// other value is dropped so a caller can't fan one request into many (audit H1).
+const ALLOWED_APPEND = new Set([
+    'videos',
+    'images',
+    'credits',
+    'similar',
+    'recommendations',
+    'reviews',
+]);
+
+export function sanitizeAppendToResponse(raw: unknown): string {
+    if (raw === undefined || raw === null) return '';
+    return String(raw)
+        .split(',')
+        .map((s) => s.trim())
+        .filter((s) => ALLOWED_APPEND.has(s))
+        .join(',');
+}
+
 /**
  * Declarative route map for TMDB endpoints.
  * Use the functions to produce endpoint paths; they do not include the base URL or the api_key param.
@@ -134,6 +166,9 @@ export const TMDB_ROUTES = {
 export class TMDBClient {
     private baseUrl: string;
     private apiKey: string;
+    // Single-flight: concurrent cache misses for the SAME key share one upstream
+    // fetch instead of dogpiling TMDB (audit H5).
+    private inFlight = new Map<string, Promise<unknown>>();
 
     constructor(baseUrl = TMDB_BASE, apiKey = TMDB_API_KEY) {
         this.baseUrl = baseUrl;
@@ -151,15 +186,29 @@ export class TMDBClient {
     ): Promise<T> {
         const cached = await redisClient.get(key);
         if (cached) return JSON.parse(cached) as T;
-        const result = await fetcher();
-        // setex requires seconds TTL,
-        const ttl = ttlSeconds
-            ? ttlSeconds < 60
-                ? 60
-                : ttlSeconds
-            : CACHE_TTL;
-        await redisClient.setex(key, ttl, JSON.stringify(result));
-        return result;
+
+        // Coalesce concurrent misses for the same key onto one upstream fetch.
+        const existing = this.inFlight.get(key);
+        if (existing) return existing as Promise<T>;
+
+        const promise = (async () => {
+            const result = await fetcher();
+            // setex requires seconds TTL,
+            const ttl = ttlSeconds
+                ? ttlSeconds < 60
+                    ? 60
+                    : ttlSeconds
+                : CACHE_TTL;
+            await redisClient.setex(key, ttl, JSON.stringify(result));
+            return result;
+        })();
+
+        this.inFlight.set(key, promise);
+        try {
+            return await promise;
+        } finally {
+            this.inFlight.delete(key);
+        }
     }
 
     private async request(pathRoute: string, params: QueryParams = {}) {
@@ -197,8 +246,11 @@ export class TMDBClient {
         append = 'credits,videos',
     ) {
         const key = this.cacheKey(`${mediaType}:${id}:details`);
+        const safeAppend = sanitizeAppendToResponse(append);
         return this.getCached(key, () =>
-            this.request(`/${mediaType}/${id}`, { append_to_response: append }),
+            this.request(`/${mediaType}/${id}`, {
+                append_to_response: safeAppend,
+            }),
         );
     }
 

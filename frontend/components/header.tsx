@@ -105,7 +105,7 @@ export function Header() {
                                 height={28}
                             />
                         </div>
-                        TMDB
+                        Flixr
                     </Link>
 
                     {isMobile ? null : (

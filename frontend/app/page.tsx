@@ -1,11 +1,11 @@
 import HeroCarousel from '@/components/hero-carousel';
 import { GenreRow } from '@/components/discover/genre-row';
 import { MovieCard } from '@/components/movies/movie-card';
-import dynamic from 'next/dynamic';
+import nextDynamic from 'next/dynamic';
 import { createServerApi } from '@/lib/api';
 import { Genre, Movie, TVShow } from '@/lib/interfaces';
 
-const CompactList = dynamic(
+const CompactList = nextDynamic(
     () => import('@/components/lists').then((mod) => mod.CompactList),
     {
         loading: () => (
@@ -13,7 +13,7 @@ const CompactList = dynamic(
         ),
     }
 );
-const NumberedList = dynamic(
+const NumberedList = nextDynamic(
     () => import('@/components/lists').then((mod) => mod.NumberedList),
     {
         loading: () => (
@@ -21,6 +21,10 @@ const NumberedList = dynamic(
         ),
     }
 );
+
+// Render on demand: this page shows live backend data, so it must not be
+// statically prerendered at build time (the build runs with no backend up).
+export const dynamic = 'force-dynamic';
 
 export const metadata = {
     title: 'Home | Flixr',

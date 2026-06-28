@@ -39,10 +39,8 @@ const SimilarMoviesSection = ({ movie }: MovieDetailsProps) => {
 
     if (error)
         return (
-            <div className='relative border border-destructive max-w-full p-2 text-wrap rounded text-sm'>
-                <pre className='text-pretty break-all'>
-                    Error: {JSON.stringify({ error }, null, 4)}
-                </pre>
+            <div className='rounded border border-destructive/40 p-3 text-sm text-muted-foreground'>
+                Couldn’t load similar movies.
             </div>
         );
 

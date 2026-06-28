@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { TMDB_ROUTES, tmdbClient } from '../services/tmdbClient';
+import { TMDB_ROUTES, tmdbClient, clampPage } from '../services/tmdbClient';
 import { buildDiscoverParams } from '../utils/discoverParams';
 import Review from '../models/Review';
 import mongoose from 'mongoose';
@@ -31,8 +31,8 @@ import mongoose from 'mongoose';
 const ROUTES = TMDB_ROUTES.movies;
 
 function parsePage(q: any) {
-    const p = +(q || 1);
-    return Number.isFinite(p) && p > 0 ? p : 1;
+    // Clamp to a valid TMDB page (integer in [1, 500]) before it reaches upstream.
+    return clampPage(q);
 }
 
 export const search = async (req: Request, res: Response) => {

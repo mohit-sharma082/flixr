@@ -20,6 +20,26 @@ reference [AUDIT.md](./AUDIT.md).
 > `ignoreBuildErrors` now off. The backend changes were written but **not compiled locally**
 > (no `backend/node_modules` present) — run `pnpm install && pnpm build` in `backend/` to
 > verify before deploy.
+>
+> **Status — 2026-06-28: quick-wins round 2 DONE.** Restored the accidentally-disabled CORS
+> middleware (dev-permissive localhost + prod allowlist), added a request body-size limit, a
+> `Review` index (H6), graceful SIGTERM/SIGINT shutdown (H4), error-handler status + 5xx-leak
+> fixes, owner-only comment delete, the C3 composer payload fix, an `app/error.tsx` boundary,
+> and stripped raw `JSON.stringify(error)` dumps from the UI. Backend **and** frontend now
+> `tsc --noEmit` clean (backend verified — `node_modules` present this round). Also created 4
+> subagents: `reality-critic`, `contract-guardian`, `bff-engineer`, `web-ui-engineer`.
+>
+> **Status — 2026-06-28: v1 build DONE (app only; hosting deferred to a later session).**
+> The community review loop is **live on movie pages** (post → see it listed; profile shows
+> your reviews via the new `GET /api/reviews/mine`). The nav FAB now has Sign in / Register /
+> Logout. Stability: fixed the render-time redirects in `not-found` and `/movies`, added
+> detail-route error boundaries, hid the decorative favorites/watchlist, and made the home page
+> dynamic (no build-time backend fetch). Security: TMDB proxy caps (page clamp 1–500,
+> `append_to_response` allowlist, search/discover rate limit). Optimization: in-process cache
+> single-flight (kills the homepage dogpile). Both apps `tsc` + build clean; contract-guardian +
+> reality-critic verified the loop end-to-end. **Deferred (post-v1):** httpOnly-cookie auth,
+> favorites/watchlist persistence, TV review loop, `next/image` optimization, server-rendered
+> first-paint for reviews.
 
 - [x] **Rotate `JWT_SECRET`** — replaced the guessable phrase with `openssl rand -hex 64`
       (128 chars) in `backend/.env`. Added **fail-fast validation** in new
@@ -57,8 +77,13 @@ reference [AUDIT.md](./AUDIT.md).
 The goal: **a logged-in user posts a review and sees it next to the movie.** One surface
 (web), one media type (movie) first.
 
-1. **Fix the review contract (C3).** One shared `CreateReviewPayload = { tmdbId, mediaType,
-   rating, content }`; send it from the composer; type `reviewsApi.post` with it.
+1. **Fix the review contract (C3).** ✅ The composer now sends `{ tmdbId, mediaType, rating,
+   content }` (matches the Joi schema). Still to do when wiring the loop — the contract-guardian
+   flagged two more latent shape bugs in the (still-unmounted) community layer:
+   - `comments.tsx` decodes `{ author?, comment?, text? }`, but `getReviewsForTmdb` returns
+     `{ tmdbId, mediaType, rating, content, user: { name, email } }` — remap on read (or share a DTO).
+   - `profile/page.tsx` invents `{ movieId, movieTitle, comment }` and fetches `/api/reviews?userId=`,
+     which the backend doesn't implement — needs a real "my reviews" endpoint or removal.
 2. **Mount the loop (C2).** Put `ReviewComposer` + a first-party reviews list on
    `app/movie/[id]`, auth-gated. Wire to `/api/reviews` (create) and
    `/api/reviews/tmdb/movie/:id` (list).

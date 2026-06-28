@@ -1,13 +1,8 @@
-'use client';
+import { redirect } from 'next/navigation';
 
-import { useRouter } from 'next/navigation';
-import React from 'react';
-
-const page = () => {
-    const router = useRouter();
-    router.replace('/');
-
-    return <></>;
-};
-
-export default page;
+// `/movies` is a legacy alias for the movies discovery page. Redirect on the
+// server (the old version called router.replace during render, which flashed an
+// empty page before bouncing).
+export default function MoviesAliasPage() {
+    redirect('/movie');
+}

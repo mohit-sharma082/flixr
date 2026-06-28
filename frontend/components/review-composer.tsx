@@ -66,9 +66,10 @@ export function ReviewComposer({
         try {
             const api = createApi();
             await api.post('/api/reviews', {
-                tmdbMovieId: movieId,
+                tmdbId: movieId,
+                mediaType: 'movie',
                 rating,
-                comment,
+                content: comment,
             });
 
             toast({
@@ -83,7 +84,9 @@ export function ReviewComposer({
             toast({
                 title: 'Error',
                 description:
-                    error.response?.data?.message || 'Failed to post review',
+                    error.response?.data?.error ||
+                    error.response?.data?.message ||
+                    'Failed to post review',
                 variant: 'destructive',
             });
         } finally {
@@ -127,7 +130,7 @@ export function ReviewComposer({
                         <Label htmlFor='comment'>Your Review</Label>
                         <Textarea
                             id='comment'
-                            placeholder='Write your review here...'
+                            placeholder='Write your review here… (e.g. what you loved, what missed)'
                             value={comment}
                             onChange={(e) => setComment(e.target.value)}
                             className='min-h-24'
@@ -135,7 +138,7 @@ export function ReviewComposer({
                     </div>
 
                     <Button type='submit' disabled={loading}>
-                        {loading ? 'Posting...' : 'Post Review'}
+                        {loading ? 'Posting…' : 'Post Review'}
                     </Button>
                 </form>
             </CardContent>

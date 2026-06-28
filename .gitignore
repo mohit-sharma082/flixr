@@ -171,3 +171,9 @@ pnpm-debug.log*
 *.tsbuildinfo
 
 .agents
+.claude
+
+# Local scratch space for temporary dev/discussion files — contents untracked (README kept)
+/temp/*
+!/temp/README.md
+bef

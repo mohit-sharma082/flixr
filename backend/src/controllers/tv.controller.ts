@@ -1,5 +1,10 @@
 import { Request, Response } from 'express';
-import { TMDB_ROUTES, tmdbClient } from '../services/tmdbClient';
+import {
+    TMDB_ROUTES,
+    tmdbClient,
+    clampPage,
+    sanitizeAppendToResponse,
+} from '../services/tmdbClient';
 import { buildDiscoverParams } from '../utils/discoverParams';
 
 /**
@@ -22,7 +27,7 @@ import { buildDiscoverParams } from '../utils/discoverParams';
 
 export const search = async (req: Request, res: Response) => {
     const q = (req.query.q || '').toString();
-    const page = +(req.query.page || 1);
+    const page = clampPage(req.query.page);
     if (!q) return res.status(400).json({ error: 'Missing q param' });
 
     // Use multi-search so results include persons / movies / tv; you can switch to /search/tv if you want only tv
@@ -31,26 +36,26 @@ export const search = async (req: Request, res: Response) => {
 };
 
 export const popular = async (req: Request, res: Response) => {
-    const page = +(req.query.page || 1);
+    const page = clampPage(req.query.page);
     const data = await tmdbClient.getPopular('tv', page);
     return res.json(data);
 };
 
 export const topRated = async (req: Request, res: Response) => {
-    const page = +(req.query.page || 1);
+    const page = clampPage(req.query.page);
     // TMDB endpoint is /tv/top_rated
     const data = await tmdbClient.raw('/tv/top_rated', { page });
     return res.json(data);
 };
 
 export const airingToday = async (req: Request, res: Response) => {
-    const page = +(req.query.page || 1);
+    const page = clampPage(req.query.page);
     const data = await tmdbClient.raw('/tv/airing_today', { page });
     return res.json(data);
 };
 
 export const onTheAir = async (req: Request, res: Response) => {
-    const page = +(req.query.page || 1);
+    const page = clampPage(req.query.page);
     const data = await tmdbClient.raw('/tv/on_the_air', { page });
     return res.json(data);
 };
@@ -86,14 +91,14 @@ export const details = async (req: Request, res: Response) => {
 
 export const recommendations = async (req: Request, res: Response) => {
     const { id } = req.params;
-    const page = +(req.query.page || 1);
+    const page = clampPage(req.query.page);
     const data = await tmdbClient.raw(`/tv/${id}/recommendations`, { page });
     return res.json(data);
 };
 
 export const similar = async (req: Request, res: Response) => {
     const { id } = req.params;
-    const page = +(req.query.page || 1);
+    const page = clampPage(req.query.page);
     const data = await tmdbClient.raw(`/tv/${id}/similar`, { page });
     return res.json(data);
 };
@@ -121,7 +126,8 @@ export const seasonDetails = async (req: Request, res: Response) => {
     if (!season_number)
         return res.status(400).json({ error: 'Missing season number' });
 
-    const append = (req.query.append as string) || 'credits';
+    const append =
+        sanitizeAppendToResponse(req.query.append) || 'credits';
     const data = await tmdbClient.raw(`/tv/${id}/season/${season_number}`, {
         append_to_response: append,
     });

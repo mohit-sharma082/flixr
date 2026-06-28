@@ -199,14 +199,8 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                                     />
                                 );
                             }
-                            return (
-                                <div className='aspect-square border p-2 overflow-scroll'>
-                                    Unsupported media type
-                                    <pre className='whitespace-pre-wrap text-pretty'>
-                                        {JSON.stringify({ item }, null, 2)}
-                                    </pre>
-                                </div>
-                            );
+                            // Unknown media_type (not movie/tv/person): skip rather than dump raw JSON.
+                            return null;
                         })}
                     </div>
                 )}

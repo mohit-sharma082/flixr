@@ -1,4 +1,5 @@
 import { Request } from 'express';
+import { clampPage } from '../services/tmdbClient';
 
 /** Params valid for BOTH /discover/movie and /discover/tv */
 const COMMON_KEYS = [
@@ -57,9 +58,8 @@ export function buildDiscoverParams(
         }
     }
 
-    // Sensible defaults
-    const page = +(req.query.page || 1);
-    params.page = Number.isFinite(page) && page > 0 ? page : 1;
+    // Sensible defaults; clamp page to a valid TMDB range before it reaches upstream.
+    params.page = clampPage(req.query.page);
     if (!params.sort_by) params.sort_by = 'popularity.desc';
 
     return params;
