@@ -1,50 +1,21 @@
 import { MovieCard } from '@/components/movies/movie-card';
 import { TvShowCard } from '@/components/tv/tv-show-card';
 import { PersonCard } from '@/components/person-card';
-
 import { Button } from '@/components/ui/button';
 import { Movie } from '@/lib/interfaces';
 import Link from 'next/link';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { cn } from '@/lib/utils';
-const getProfileUrl = (path: string | null) => {
-    return path ? `https://image.tmdb.org/t/p/w200${path}` : null;
-};
+import { Search, Film, User, AlertCircle } from 'lucide-react';
+import {
+    Empty,
+    EmptyHeader,
+    EmptyTitle,
+    EmptyDescription,
+    EmptyMedia,
+} from '@/components/ui/empty';
 
-const colorByIndex = (
-    index: number
-): 'blue' | 'red' | 'green' | 'yellow' | 'violet' | 'rose' | 'orange' => {
-    const colors = [
-        'blue',
-        'red',
-        'green',
-        'yellow',
-        'violet',
-        'rose',
-        'orange',
-    ];
-    return colors[index % colors.length] as
-        | 'blue'
-        | 'red'
-        | 'green'
-        | 'yellow'
-        | 'violet'
-        | 'rose'
-        | 'orange';
-};
-
-// Get initials from name
-const getInitials = (name: string) => {
-    return name
-        .split(' ')
-        .map((part) => part[0])
-        .join('')
-        .substring(0, 2)
-        .toUpperCase();
-};
 export const metadata = {
-    title: 'Search - Flixr Community',
-    description: 'Search for movies in the Flixr Community',
+    title: 'Search | Flixr',
+    description: 'Search for movies, TV shows, and people on Flixr',
 };
 
 interface SearchPageProps {
@@ -57,7 +28,7 @@ interface SearchPageProps {
 async function searchMulti(
     query: string,
     page: number
-): Promise<{ results: Movie[]; totalPages: number }> {
+): Promise<{ results: any[]; totalPages: number }> {
     if (!query) {
         return { results: [], totalPages: 1 };
     }
@@ -75,7 +46,7 @@ async function searchMulti(
 
         if (!response.ok) {
             console.log('Search API response not ok:', response);
-            throw new Error('Failed to search movies : ');
+            throw new Error('Failed to search');
         }
 
         const data = await response.json();
@@ -84,7 +55,7 @@ async function searchMulti(
             totalPages: data.total_pages || 1, // TMDB/backend use snake_case
         };
     } catch (error) {
-        console.error('Error searching movies:', error);
+        console.error('Error searching:', error);
         return { results: [], totalPages: 1 };
     }
 }
@@ -99,8 +70,8 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 
     const response = await searchMulti(query, page);
     const { results, totalPages } = response;
-    const arr = response?.results ?? [];
-    arr.forEach((item) => {
+
+    results.forEach((item) => {
         if (item.media_type === 'person') {
             people.push(item);
         } else {
@@ -108,108 +79,76 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         }
     });
 
-    return (
-        <main className='min-h-screen '>
-            <div className=' px-4 sm:px-6 lg:px-8 py-12'>
-                <div className='mb-8'>
-                    <h1 className='text-3xl font-bold '>
-                        {query
-                            ? `Search Results for "${query}"`
-                            : 'Search Movies'}
-                    </h1>
-                    <p className=' mt-2'>
-                        {items.length > 0
-                            ? `Found ${items.length} results`
-                            : 'Enter a search term to find movies'}
-                    </p>
-                </div>
+    const hasResults = items.length > 0 || people.length > 0;
 
-                {people.length > 0 && (
-                    <div className='grid grid-cols-3 justify-center md:grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-4'>
-                        {people.map((person: any, i: number) => {
-                            return (
-                                <Link key={i} href={`/person/${person.id}`}>
-                                    <div className='w-[100px] md:w-[150px] space-y-3 '>
-                                        <div className='overflow-hidden rounded-md'>
-                                            <Avatar className='h-[100px] md:h-[150px] w-[100px] md:w-[150px] rounded-md'>
-                                                {person.profile_path ? (
-                                                    <AvatarImage
-                                                        src={
-                                                            getProfileUrl(
-                                                                person.profile_path
-                                                            ) || ''
-                                                        }
-                                                        alt={person.name}
-                                                        className='object-cover'
-                                                    />
-                                                ) : (
-                                                    <AvatarFallback
-                                                        className={
-                                                            'text-4xl bg-gradient-to-br from-primary/5 to-background'
-                                                        }>
-                                                        {getInitials(
-                                                            person.name
-                                                        )}
-                                                    </AvatarFallback>
-                                                )}
-                                            </Avatar>
-                                        </div>
-                                        <div className='space-y-1 text-sm'>
-                                            <h3 className='font-medium leading-none'>
-                                                {person.name}
-                                            </h3>
-                                            <p className='text-xs text-muted-foreground line-clamp-2'>
-                                                {person.character}
-                                            </p>
-                                        </div>
-                                    </div>
-                                </Link>
-                            );
-                        })}
+    return (
+        <main className='min-h-screen bg-background text-foreground pb-20'>
+            <div className='px-4 sm:px-6 lg:px-8 py-8 md:py-12'>
+                {query && hasResults && (
+                    <div className='mb-8 md:mb-12 border-b border-border/40 pb-6'>
+                        <h1 className='text-3xl font-extrabold tracking-tight'>
+                            Search Results
+                        </h1>
+                        <p className='text-muted-foreground mt-2 text-sm md:text-base'>
+                            Showing results for &ldquo;{query}&rdquo; — Found {items.length} titles and {people.length} people.
+                        </p>
                     </div>
                 )}
 
+                {/* People Results */}
+                {people.length > 0 && (
+                    <div className='mb-12'>
+                        <h2 className='text-xl font-bold mb-6 text-foreground flex items-center gap-2'>
+                            <User className='h-5 w-5 text-primary' />
+                            People
+                        </h2>
+                        <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-3 sm:gap-x-4 gap-y-6 sm:gap-y-8 auto-rows-max'>
+                            {people.map((person, i) => (
+                                <PersonCard
+                                    key={`person-${person.id}-${i}`}
+                                    person={person}
+                                    index={i}
+                                />
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {/* Media Results */}
                 {items.length > 0 && (
-                    <div className='grid grid-cols-2 gap-4 sm:grid-cols-2  md:grid-cols-[repeat(auto-fill,minmax(300px,1fr))]'>
-                        {items?.map((item, i) => {
-                            if (item.media_type == 'tv') {
-                                return (
-                                    <TvShowCard
-                                        key={'tv_' + i}
-                                        show={item}
-                                        index={i}
-                                    />
-                                );
-                            }
-                            if (item.media_type == 'movie') {
+                    <div>
+                        <h2 className='text-xl font-bold mb-6 text-foreground flex items-center gap-2'>
+                            <Film className='h-5 w-5 text-primary' />
+                            Movies & TV Shows
+                        </h2>
+                        <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-3 sm:gap-x-4 gap-y-6 sm:gap-y-8 auto-rows-max'>
+                            {items.map((item, i) => {
+                                if (item.media_type === 'tv') {
+                                    return (
+                                        <TvShowCard
+                                            key={`tv-${item.id}-${i}`}
+                                            show={item}
+                                            index={i}
+                                        />
+                                    );
+                                }
                                 return (
                                     <MovieCard
-                                        key={'movie_' + i}
+                                        key={`movie-${item.id}-${i}`}
                                         movie={item}
                                         index={i}
                                     />
                                 );
-                            }
-                            if (item.media_type == 'person') {
-                                return (
-                                    <PersonCard
-                                        key={'person_' + i}
-                                        person={item}
-                                        index={i}
-                                    />
-                                );
-                            }
-                            // Unknown media_type (not movie/tv/person): skip rather than dump raw JSON.
-                            return null;
-                        })}
+                            })}
+                        </div>
                     </div>
                 )}
 
                 {/* Pagination */}
-                {totalPages > 1 && (
-                    <div className='mt-12 flex items-center justify-center gap-4'>
+                {query && hasResults && totalPages > 1 && (
+                    <div className='mt-12 md:mt-16 flex items-center justify-center gap-4 border-t border-border/45 pt-8'>
                         {page > 1 && (
-                            <Button asChild variant='outline'>
+                            <Button asChild variant='outline' className="min-h-[44px] px-5">
                                 <Link
                                     href={`/search?q=${encodeURIComponent(
                                         query
@@ -219,12 +158,12 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                             </Button>
                         )}
 
-                        <span className=''>
+                        <span className='text-sm font-medium text-muted-foreground'>
                             Page {page} of {totalPages}
                         </span>
 
                         {page < totalPages && (
-                            <Button asChild>
+                            <Button asChild className="min-h-[44px] px-5">
                                 <Link
                                     href={`/search?q=${encodeURIComponent(
                                         query
@@ -236,22 +175,41 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                     </div>
                 )}
 
+                {/* Empty / Initial State */}
                 {!query && (
-                    <div className='text-center py-12'>
-                        <p className=''>
-                            Use the search bar above to find movies
-                        </p>
+                    <div className='py-12 md:py-20 flex justify-center'>
+                        <Empty className="max-w-md border border-dashed border-border/60 rounded-xl p-8 bg-foreground/[0.01]">
+                            <EmptyMedia variant="icon" className="bg-primary/10 text-primary">
+                                <Search className="h-6 w-6" />
+                            </EmptyMedia>
+                            <EmptyHeader>
+                                <EmptyTitle className="text-xl font-bold">Search Flixr</EmptyTitle>
+                                <EmptyDescription className="text-muted-foreground max-w-sm mt-1">
+                                    Type a query in the search bar above to find movies, TV shows, and people in our database.
+                                </EmptyDescription>
+                            </EmptyHeader>
+                        </Empty>
                     </div>
                 )}
 
-                {query && items.length === 0 && (
-                    <div className='text-center py-12'>
-                        <p className=''>
-                            No movies or shows found for "{query}"
-                        </p>
+                {/* No results state */}
+                {query && !hasResults && (
+                    <div className='py-12 md:py-20 flex justify-center'>
+                        <Empty className="max-w-md border border-dashed border-border/60 rounded-xl p-8 bg-foreground/[0.01]">
+                            <EmptyMedia variant="icon" className="bg-destructive/10 text-destructive">
+                                <AlertCircle className="h-6 w-6" />
+                            </EmptyMedia>
+                            <EmptyHeader>
+                                <EmptyTitle className="text-xl font-bold">No Results Found</EmptyTitle>
+                                <EmptyDescription className="text-muted-foreground max-w-sm mt-1">
+                                    We couldn't find any titles or people matching &ldquo;{query}&rdquo;. Please verify spelling or try another query.
+                                </EmptyDescription>
+                            </EmptyHeader>
+                        </Empty>
                     </div>
                 )}
             </div>
         </main>
     );
 }
+

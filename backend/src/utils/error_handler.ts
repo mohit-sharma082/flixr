@@ -30,12 +30,11 @@ const errorHandler = (err: unknown, req: Request, res: Response, next: NextFunct
         statusCode >= 500
             ? "Internal server error"
             : error?.message || "Request failed";
-    const message_type = "INTERNAL_SERVER_ERROR";
 
     res.status(statusCode).json({
-        status: statusCode,
+        error: true,
         message,
-        message_type,
+        statusCode,
     });
 };
 

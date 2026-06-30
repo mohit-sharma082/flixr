@@ -7,6 +7,34 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { ImageItem } from '@/lib/interfaces';
 import { cn } from '@/lib/utils';
 
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
+    const personId = Number.parseInt(id, 10);
+    if (isNaN(personId)) return { title: 'Person Details | Flixr' };
+
+    try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+        const response = await fetch(`${apiUrl}/api/people/${personId}`);
+        if (!response.ok) return { title: 'Person Details | Flixr' };
+        const person = await response.json();
+        if (!person) return { title: 'Person Not Found | Flixr' };
+
+        return {
+            title: `${person.name} | Flixr`,
+            description: person.biography?.slice(0, 160) || `Learn more about ${person.name} on Flixr`,
+            openGraph: {
+                title: `${person.name} | Flixr`,
+                description: person.biography,
+                images: person.profile_path
+                    ? [`https://image.tmdb.org/t/p/w500${person.profile_path}`]
+                    : [],
+            },
+        };
+    } catch {
+        return { title: 'Person Details | Flixr' };
+    }
+}
+
 interface PersonPageProps {
     params: { id: string };
 }

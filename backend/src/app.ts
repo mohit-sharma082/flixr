@@ -45,11 +45,51 @@ app.use(
 
 app.use(express.json({ limit: '1mb' }));
 
-const limiter = rateLimit({
-    windowMs: 60 * 1000,
-    max: 120,
+// Cache-Control HTTP Headers middleware
+app.use((req, res, next) => {
+    if (req.method === 'GET') {
+        const path = req.path;
+        if (path.includes('/search')) {
+            res.setHeader('Cache-Control', 'public, max-age=300'); // 5 min
+        } else if (path.includes('/trending') || path.includes('/homepage')) {
+            res.setHeader('Cache-Control', 'public, max-age=3600'); // 1 hour
+        } else if (path.includes('/genres')) {
+            res.setHeader('Cache-Control', 'public, max-age=86400'); // 24 hours
+        } else if (path.includes('/discover')) {
+            res.setHeader('Cache-Control', 'public, max-age=1800'); // 30 min
+        } else if (/^\/api\/(movies|tv|people|companies)\/\d+/.test(path)) {
+            res.setHeader('Cache-Control', 'public, max-age=21600'); // 6 hours
+        }
+    }
+    next();
 });
-app.use(limiter);
+
+const generalLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 100,
+    message: { error: true, message: 'Too many requests, please try again later.', statusCode: 429 },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+const searchLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 30,
+    message: { error: true, message: 'Too many search requests, please try again later.', statusCode: 429 },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+const authLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 10,
+    message: { error: true, message: 'Too many authentication attempts, please try again later.', statusCode: 429 },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+app.use(generalLimiter);
+app.use(['/api/movies/search', '/api/tv/search', '/api/people/search', '/api/common/search'], searchLimiter);
 
 app.use((req, res, next) => {
     console.log(`~ ${req.method} ${req.path}`);
@@ -59,10 +99,11 @@ app.use((req, res, next) => {
 // Mongo is connected in server.ts (and gates app.listen). Redis connects lazily below.
 
 // Redis connect
+const REDIS_HOST = process.env.REDIS_HOST || '127:0.0.1';
 redisClient.on('connect', () => console.log('Redis client connected'));
 redisClient.on('error', (err) => console.error('Redis error', err));
 
-app.use('/api/auth', authRoutes);
+app.use('/api/auth', authLimiter, authRoutes);
 
 app.use('/api/movies', movieRoutes);
 app.use('/api/tv', tvRoutes);

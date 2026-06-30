@@ -176,4 +176,5 @@ pnpm-debug.log*
 # Local scratch space for temporary dev/discussion files — contents untracked (README kept)
 /temp/*
 !/temp/README.md
-bef
+
+docs/

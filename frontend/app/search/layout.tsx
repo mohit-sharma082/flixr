@@ -12,18 +12,21 @@ export default function RootLayout({
 }>) {
     return (
         <div>
-            <div className='flex items-center p-2 md:px-4 border'>
+            <div className='flex items-center p-2 md:px-4 border bg-background/95 backdrop-blur-md sticky top-0 z-30 min-h-[56px]'>
                 <Link href='/'>
-                    <Button variant={'ghost'} size={'icon'}>
-                        <Home />
+                    <Button variant={'ghost'} size={'icon'} className="min-h-[44px] min-w-[44px]">
+                        <Home className="h-5 w-5" />
                     </Button>
                 </Link>
-                <SearchSection />
+                <Suspense fallback={<div className="h-11 w-full max-w-lg bg-foreground/5 rounded-md animate-pulse ml-2 md:ml-4" />}>
+                    <SearchSection />
+                </Suspense>
             </div>
-            <Suspense fallback={<SearchSkeleton />}>{children}</Suspense>;
+            <Suspense fallback={<SearchSkeleton />}>{children}</Suspense>
         </div>
     );
 }
+
 
 const SearchSkeleton = () => {
     return (
