@@ -25,14 +25,14 @@ import {
 import { cn } from '@/lib/utils';
 import { Movie, Review } from '@/lib/interfaces';
 
-import { CastAndCrewSkeleton } from '../cast-crew.tab';
+import { CastAndCrewSkeleton } from '../../cast-crew.tab';
 
-const CastAndCrewTab = lazy(() => import('../cast-crew.tab'));
-const MediaTab = lazy(() => import('../media.tab'));
-import SimilarMoviesSection from './similar-movies';
-import ReviewsGrid from '../reviews-grid';
-import FlixrReviews from './flixr-reviews';
-import WhereToWatch from './where-to-watch';
+const CastAndCrewTab = lazy(() => import('../../cast-crew.tab'));
+const MediaTab = lazy(() => import('../../media.tab'));
+import SimilarMoviesSection from '../similar-movies';
+import ReviewsGrid from '../../reviews-grid';
+import FlixrReviews from '../flixr-reviews';
+import WhereToWatch from '../where-to-watch';
 
 interface MovieDetailsProps {
     movie: Movie;
@@ -536,7 +536,7 @@ export function MovieDetails({ movie, reviews }: MovieDetailsProps) {
                         </div>
                     </div>
                     {/* Flixr first-party community reviews (ours) */}
-                    <FlixrReviews movieId={movie.id} />
+                    <FlixrReviews tmdbId={movie.id} mediaType='movie' />
 
                     <Separator className='my-8' />
 

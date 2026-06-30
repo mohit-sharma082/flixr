@@ -19,12 +19,14 @@ import {
 import { useToast } from '@/hooks/use-toast';
 
 interface ReviewComposerProps {
-    movieId: number;
+    tmdbId: number;
+    mediaType?: 'movie' | 'tv';
     onReviewAdded?: () => void;
 }
 
 export function ReviewComposer({
-    movieId,
+    tmdbId,
+    mediaType = 'movie',
     onReviewAdded,
 }: ReviewComposerProps) {
     const token = useSelector(selectToken);
@@ -66,8 +68,8 @@ export function ReviewComposer({
         try {
             const api = createApi();
             await api.post('/api/reviews', {
-                tmdbId: movieId,
-                mediaType: 'movie',
+                tmdbId,
+                mediaType,
                 rating,
                 content: comment,
             });
@@ -99,11 +101,14 @@ export function ReviewComposer({
             <CardHeader>
                 <CardTitle>Write a Review</CardTitle>
                 <CardDescription>
-                    Share your thoughts about this movie
+                    Share your thoughts about this{' '}
+                    {mediaType === 'tv' ? 'show' : 'movie'}
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                <form onSubmit={handleSubmit} className='space-y-4 w-fit'>
+                <form
+                    onSubmit={handleSubmit}
+                    className='w-full max-w-xl space-y-4'>
                     <div className='space-y-2'>
                         <Label htmlFor='rating'>Rating (1-10)</Label>
                         <div className='flex items-center gap-4'>

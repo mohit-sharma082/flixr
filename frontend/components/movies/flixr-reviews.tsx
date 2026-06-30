@@ -15,7 +15,8 @@ import { Star, Calendar, MessageSquare, AlertTriangle } from 'lucide-react';
 import { ReviewComposer } from '@/components/review-composer';
 
 interface FlixrReviewsProps {
-    movieId: number;
+    tmdbId: number;
+    mediaType?: 'movie' | 'tv';
 }
 
 interface FlixrReview {
@@ -47,7 +48,10 @@ function formatDate(value: string) {
     });
 }
 
-export default function FlixrReviews({ movieId }: FlixrReviewsProps) {
+export default function FlixrReviews({
+    tmdbId,
+    mediaType = 'movie',
+}: FlixrReviewsProps) {
     const [reviews, setReviews] = useState<FlixrReview[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
@@ -58,7 +62,7 @@ export default function FlixrReviews({ movieId }: FlixrReviewsProps) {
         try {
             const api = createApi();
             const response = await api.get(
-                `/api/reviews/tmdb/movie/${movieId}`
+                `/api/reviews/tmdb/${mediaType}/${tmdbId}`
             );
             setReviews(
                 Array.isArray(response.data) ? response.data : []
@@ -68,7 +72,7 @@ export default function FlixrReviews({ movieId }: FlixrReviewsProps) {
         } finally {
             setLoading(false);
         }
-    }, [movieId]);
+    }, [tmdbId, mediaType]);
 
     useEffect(() => {
         fetchReviews();
@@ -90,7 +94,11 @@ export default function FlixrReviews({ movieId }: FlixrReviewsProps) {
                 )}
             </div>
 
-            <ReviewComposer movieId={movieId} onReviewAdded={fetchReviews} />
+            <ReviewComposer
+                tmdbId={tmdbId}
+                mediaType={mediaType}
+                onReviewAdded={fetchReviews}
+            />
 
             {loading && (
                 <p className='text-sm text-muted-foreground' role='status'>

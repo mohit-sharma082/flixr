@@ -38,6 +38,38 @@ export interface ImageItem {
     vote_count: number;
     width: number;
 }
+export interface Keyword {
+    id: number;
+    name: string;
+}
+
+export interface ExternalIds {
+    imdb_id?: string | null;
+    facebook_id?: string | null;
+    instagram_id?: string | null;
+    twitter_id?: string | null;
+    wikidata_id?: string | null;
+}
+
+export interface ReleaseDates {
+    results: Array<{
+        iso_3166_1: string;
+        release_dates: Array<{
+            certification: string;
+            type: number;
+            release_date: string;
+            note?: string;
+        }>;
+    }>;
+}
+
+export interface ContentRatings {
+    results: Array<{
+        iso_3166_1: string;
+        rating: string;
+    }>;
+}
+
 export interface Movie {
     adult: boolean;
     backdrop_path: string | null;
@@ -87,6 +119,12 @@ export interface Movie {
             type: string;
         }>;
     };
+
+    keywords?: { keywords?: Keyword[]; results?: Keyword[] };
+    external_ids?: ExternalIds;
+    release_dates?: ReleaseDates;
+    recommendations?: { results: Movie[] };
+    similar?: { results: Movie[] };
 }
 
 export interface TVShow {
@@ -184,6 +222,12 @@ export interface TVShow {
             type: string;
         }>;
     };
+
+    keywords?: { results?: Keyword[]; keywords?: Keyword[] };
+    external_ids?: ExternalIds;
+    content_ratings?: ContentRatings;
+    recommendations?: { results: TVShow[] };
+    similar?: { results: TVShow[] };
 }
 
 export interface Episode {
@@ -333,6 +377,8 @@ export interface Video {
     site: string;
     size: number;
     type: string;
+    official?: boolean;
+    published_at?: string;
 }
 
 export interface VideoResponse {

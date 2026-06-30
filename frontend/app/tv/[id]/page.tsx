@@ -8,9 +8,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     try {
         const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
         const res = await fetch(
-            `${apiBase}/api/tv/${encodeURIComponent(
-                id
-            )}?append=credits,images,videos`
+            `${apiBase}/api/tv/${encodeURIComponent(id)}`
         );
         if (!res.ok) return { title: 'TV Show Details | Flixr' };
         const data = await res.json();
@@ -45,9 +43,7 @@ async function getTVDetails(
         const apiBase =
             process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
         const res = await fetch(
-            `${apiBase}/api/tv/${encodeURIComponent(
-                id
-            )}?append=credits,images,videos`,
+            `${apiBase}/api/tv/${encodeURIComponent(id)}`,
             {
                 next: { revalidate: 3600 },
             }

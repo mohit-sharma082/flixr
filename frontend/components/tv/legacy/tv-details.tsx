@@ -23,13 +23,13 @@ import {
 import { cn } from '@/lib/utils';
 import type { Review, TVShow } from '@/lib/interfaces';
 
-import { CastAndCrewSkeleton } from '../cast-crew.tab';
+import { CastAndCrewSkeleton } from '../../cast-crew.tab';
 
-const CastAndCrewTab = lazy(() => import('../cast-crew.tab'));
-const MediaTab = lazy(() => import('../media.tab'));
+const CastAndCrewTab = lazy(() => import('../../cast-crew.tab'));
+const MediaTab = lazy(() => import('../../media.tab'));
 // const SimilarShowsSection = lazy(() => import('./similar-shows'));
-import ReviewsGrid from '../reviews-grid';
-import WhereToWatch from '../movies/where-to-watch';
+import ReviewsGrid from '../../reviews-grid';
+import WhereToWatch from '../../movies/where-to-watch';
 
 interface TVDetailsProps {
     show: TVShow;

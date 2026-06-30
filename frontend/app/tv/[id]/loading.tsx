@@ -1,11 +1,5 @@
-import React from 'react';
+import { DetailSkeleton } from '@/components/details/detail-skeleton';
 
-const loading = () => {
-  return (
-    <div className={'h-screen w-screen bg-black flex items-center justify-center'}>
-        <img src={'/dot-spinner.svg'} alt="Loading..." className='h-24 w-24' />
-    </div>
-  )
+export default function Loading() {
+    return <DetailSkeleton />;
 }
-
-export default loading

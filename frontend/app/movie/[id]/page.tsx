@@ -1,5 +1,3 @@
-import React, { Suspense } from 'react';
-import { MovieDetailsSkeleton } from '@/components/movies/movie-details-skeleton';
 import { MovieDetails } from '@/components/movies/movie-details';
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
@@ -46,7 +44,9 @@ export default async function MovieDetailPage({
             }
             const apiUrl =
                 process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
-            const response = await fetch(`${apiUrl}/api/movies/${movieId}`);
+            const response = await fetch(`${apiUrl}/api/movies/${movieId}`, {
+                next: { revalidate: 3600 },
+            });
 
             if (!response.ok) {
                 throw new Error('Failed to fetch movie details');
@@ -72,12 +72,10 @@ export default async function MovieDetailPage({
 
     return (
         <main>
-            <Suspense fallback={<MovieDetailsSkeleton />}>
-                <MovieDetails
-                    movie={movieData?.movie}
-                    reviews={movieData?.reviews?.results ?? []}
-                />
-            </Suspense>
+            <MovieDetails
+                movie={movieData?.movie}
+                reviews={movieData?.reviews?.results ?? []}
+            />
         </main>
     );
 }
