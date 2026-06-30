@@ -40,6 +40,20 @@ reference [AUDIT.md](./AUDIT.md).
 > reality-critic verified the loop end-to-end. **Deferred (post-v1):** httpOnly-cookie auth,
 > favorites/watchlist persistence, TV review loop, `next/image` optimization, server-rendered
 > first-paint for reviews.
+>
+> **Status — 2026-06-30: piracy embed removed + UX refinement + tooling.** Replaced the
+> `vidsrcme.ru` piracy iframe on movie & TV pages with a legitimate TMDB/JustWatch **Where to
+> Watch** tab (new `GET /api/{movies,tv}/:id/watch-providers`) — the last legal blocker to
+> hosting. Ran a `ux-ui-critic` pass and landed quick wins (dark default theme; a11y on the
+> search/auth surfaces; design-system polish; wired the dead Share button; deep-link-safe back
+> button; movie production-logo null guard). Created 5 reusable subagents in `.claude/agents/`
+> (reality-critic, contract-guardian, bff-engineer, web-ui-engineer, ux-ui-critic) and pruned
+> `docs/` from 18 → 9 files. Both apps `tsc` clean; `next build` green; reality-critic
+> re-verified the review loop + the new watch tab end-to-end. Work committed on branch
+> `stabilize-v1` (not pushed — the remote URL still carries a PAT to rotate). **Still deferred
+> (post-v1):** TV community reviews, profile review-title hydration, FAB keyboard a11y,
+> httpOnly cookies, `next/image` for hero/logos, test + CI spine. On deploy, force a clean
+> `.next` rebuild so stale compiled chunks don't ship the removed player.
 
 - [x] **Rotate `JWT_SECRET`** — replaced the guessable phrase with `openssl rand -hex 64`
       (128 chars) in `backend/.env`. Added **fail-fast validation** in new
