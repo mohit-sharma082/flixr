@@ -99,7 +99,9 @@ export const genres = async (_req: Request, res: Response) => {
 export const details = async (req: Request, res: Response) => {
     const id = req.params.id as string;
     if (!id) return res.status(400).json({ error: 'Missing movie id' });
-    const append = (req.query.append as string) || 'credits,videos,images';
+    const append =
+        (req.query.append as string) ||
+        'credits,videos,images,recommendations,similar,keywords,external_ids,release_dates';
 
     const [movie, reviews] = await Promise.allSettled([
         tmdbClient.getDetails('movie', id, append),

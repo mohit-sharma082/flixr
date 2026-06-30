@@ -28,6 +28,10 @@ const ALLOWED_APPEND = new Set([
     'similar',
     'recommendations',
     'reviews',
+    'keywords',
+    'external_ids',
+    'release_dates', // movie certifications (US -> PG-13 etc.)
+    'content_ratings', // tv certifications (US -> TV-MA etc.)
 ]);
 
 export function sanitizeAppendToResponse(raw: unknown): string {
@@ -245,8 +249,10 @@ export class TMDBClient {
         id: string | number,
         append = 'credits,videos',
     ) {
-        const key = this.cacheKey(`${mediaType}:${id}:details`);
         const safeAppend = sanitizeAppendToResponse(append);
+        // Include the append set in the key so different append requests don't
+        // collide / serve stale partial data from a leaner earlier fetch.
+        const key = this.cacheKey(`${mediaType}:${id}:details:${safeAppend}`);
         return this.getCached(key, () =>
             this.request(`/${mediaType}/${id}`, {
                 append_to_response: safeAppend,

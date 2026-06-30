@@ -78,7 +78,7 @@ export const details = async (req: Request, res: Response) => {
     // Append useful info by default
     const append =
         (req.query.append as string) ||
-        'credits,videos,recommendations,external_ids';
+        'credits,videos,images,recommendations,similar,keywords,external_ids,content_ratings';
     const [details, reviews] = await Promise.allSettled([
         tmdbClient.getDetails('tv', id, append),
         tmdbClient.raw(TMDB_ROUTES.tv.reviews(id)),
