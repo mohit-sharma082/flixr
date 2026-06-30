@@ -37,6 +37,7 @@ from a 6–7.
 | Doc | What's in it |
 |---|---|
 | [ARCHITECTURE.md](./ARCHITECTURE.md) | System map, data flow, module inventory, what's genuinely well-built |
+| [DESIGN.md](./DESIGN.md) | Design system & UI/UX guidelines — visual language, tokens, component conventions, page archetypes, a11y rules |
 | [AUDIT.md](./AUDIT.md) | Full findings by severity & dimension, with evidence/impact/fix; refuted findings; maturity scorecard |
 | [PROJECT_IDEA.md](./PROJECT_IDEA.md) | The product thesis, competitive landscape, portfolio-vs-product framing, the sharpest version |
 | [DISCUSSION.md](./DISCUSSION.md) | A four-voice engineering debate (Shipper / Architect / Strategist / Skeptic) + moderated synthesis |
