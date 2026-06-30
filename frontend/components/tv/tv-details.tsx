@@ -29,6 +29,7 @@ const CastAndCrewTab = lazy(() => import('../cast-crew.tab'));
 const MediaTab = lazy(() => import('../media.tab'));
 // const SimilarShowsSection = lazy(() => import('./similar-shows'));
 import ReviewsGrid from '../reviews-grid';
+import WhereToWatch from '../movies/where-to-watch';
 
 interface TVDetailsProps {
     show: TVShow;
@@ -87,7 +88,23 @@ export function TVDetails({ show, reviews }: TVDetailsProps) {
     };
 
     const goBack = () => {
-        window.history.back();
+        // Deep links / new tabs / search-engine arrivals have no in-app history;
+        // fall back to home instead of leaving the site or doing nothing.
+        if (typeof window !== 'undefined' && window.history.length > 1) {
+            window.history.back();
+        } else {
+            window.location.assign('/');
+        }
+    };
+
+    const handleShare = () => {
+        const url =
+            typeof window !== 'undefined' ? window.location.href : '';
+        if (typeof navigator !== 'undefined' && navigator.share) {
+            navigator.share({ title: show.name ?? 'Flixr', url }).catch(() => {});
+        } else if (typeof navigator !== 'undefined') {
+            navigator.clipboard?.writeText(url);
+        }
     };
 
     return (
@@ -285,7 +302,8 @@ export function TVDetails({ show, reviews }: TVDetailsProps) {
                                     <Button
                                         variant='outline'
                                         size='icon'
-                                        className='rounded-full'>
+                                        className='rounded-full'
+                                        onClick={handleShare}>
                                         <Share2 className='h-5 w-5' />
                                         <span className='sr-only'>Share</span>
                                     </Button>
@@ -322,7 +340,7 @@ export function TVDetails({ show, reviews }: TVDetailsProps) {
                                         Media
                                     </TabsTrigger>
                                     <TabsTrigger value='watch'>
-                                        Watch
+                                        Where to Watch
                                     </TabsTrigger>
                                 </TabsList>
 
@@ -577,12 +595,7 @@ export function TVDetails({ show, reviews }: TVDetailsProps) {
                                 </TabsContent>
 
                                 <TabsContent value='watch'>
-                                    <div className='flex-1 border-2 rounded-xl overflow-hidden'>
-                                        <iframe
-                                            src={`https://vidsrcme.ru/embed/tv?tmdb=${show.id}`}
-                                            className='w-full min-h-[500px]'
-                                            allowFullScreen></iframe>
-                                    </div>
+                                    <WhereToWatch mediaType='tv' id={show.id} />
                                 </TabsContent>
                             </Tabs>
                         </div>

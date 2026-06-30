@@ -32,6 +32,7 @@ const MediaTab = lazy(() => import('../media.tab'));
 import SimilarMoviesSection from './similar-movies';
 import ReviewsGrid from '../reviews-grid';
 import FlixrReviews from './flixr-reviews';
+import WhereToWatch from './where-to-watch';
 
 interface MovieDetailsProps {
     movie: Movie;
@@ -88,7 +89,23 @@ export function MovieDetails({ movie, reviews }: MovieDetailsProps) {
     };
 
     const goBack = () => {
-        window.history.back();
+        // Deep links / new tabs / search-engine arrivals have no in-app history;
+        // fall back to home instead of leaving the site or doing nothing.
+        if (typeof window !== 'undefined' && window.history.length > 1) {
+            window.history.back();
+        } else {
+            window.location.assign('/');
+        }
+    };
+
+    const handleShare = () => {
+        const url =
+            typeof window !== 'undefined' ? window.location.href : '';
+        if (typeof navigator !== 'undefined' && navigator.share) {
+            navigator.share({ title: movie.title ?? 'Flixr', url }).catch(() => {});
+        } else if (typeof navigator !== 'undefined') {
+            navigator.clipboard?.writeText(url);
+        }
     };
 
     const mediaType = movie.media_type || 'movie';
@@ -287,7 +304,8 @@ export function MovieDetails({ movie, reviews }: MovieDetailsProps) {
                                     <Button
                                         variant='outline'
                                         size='icon'
-                                        className='rounded-full'>
+                                        className='rounded-full'
+                                        onClick={handleShare}>
                                         <Share2 className='h-5 w-5' />
                                         <span className='sr-only'>Share</span>
                                     </Button>
@@ -315,8 +333,8 @@ export function MovieDetails({ movie, reviews }: MovieDetailsProps) {
                                     <TabsTrigger value='media'>
                                         Media
                                     </TabsTrigger>
-                                    <TabsTrigger value='video'>
-                                        Watch
+                                    <TabsTrigger value='watch'>
+                                        Where to Watch
                                     </TabsTrigger>
                                 </TabsList>
 
@@ -451,13 +469,19 @@ export function MovieDetails({ movie, reviews }: MovieDetailsProps) {
                                                         href={
                                                             '/company/' + pc.id
                                                         }>
-                                                        <div className='relative  aspect-video border-2 bg-primary/5 rounded-2xl '>
-                                                            <Image
-                                                                src={`https://image.tmdb.org/t/p/w500${pc.logo_path}`}
-                                                                alt=''
-                                                                fill
-                                                                className='h-28 p-4'
-                                                            />
+                                                        <div className='relative aspect-video border-2 bg-primary/5 rounded-2xl flex items-center justify-center p-4'>
+                                                            {pc.logo_path ? (
+                                                                <Image
+                                                                    src={`https://image.tmdb.org/t/p/w500${pc.logo_path}`}
+                                                                    alt={pc.name}
+                                                                    fill
+                                                                    className='object-contain p-2'
+                                                                />
+                                                            ) : (
+                                                                <span className='text-xs font-medium text-center'>
+                                                                    {pc.name}
+                                                                </span>
+                                                            )}
                                                         </div>
 
                                                         <div className='p-2'>
@@ -497,19 +521,11 @@ export function MovieDetails({ movie, reviews }: MovieDetailsProps) {
                                     </Suspense>
                                 </TabsContent>
 
-                                <TabsContent value='video'>
-                                    <div className='flex-1 border-2 rounded p-2'>
-                                        <iframe
-                                            src={`https://vidsrcme.ru/embed/movie?tmdb=${movie.id}`}
-                                            style={{
-                                                width: '100%',
-                                                minHeight: '500px',
-                                            }}
-                                            // frameborder='0'
-                                            // referrerpolicy='origin'
-                                            // allowfullscreen
-                                        ></iframe>
-                                    </div>
+                                <TabsContent value='watch'>
+                                    <WhereToWatch
+                                        mediaType='movie'
+                                        id={movie.id}
+                                    />
                                 </TabsContent>
                             </Tabs>
                         </div>

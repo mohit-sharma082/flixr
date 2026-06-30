@@ -115,6 +115,14 @@ export const videos = async (req: Request, res: Response) => {
     return res.json(data);
 };
 
+export const watchProviders = async (req: Request, res: Response) => {
+    const id = req.params.id as string;
+    // TMDB /watch/providers returns JustWatch-sourced legal availability by region:
+    // { id, results: { US: { link, flatrate?, rent?, buy? }, ... } }
+    const data = await tmdbClient.raw(TMDB_ROUTES.tv.watchProviders(id));
+    return res.json(data);
+};
+
 export const externalIds = async (req: Request, res: Response) => {
     const { id } = req.params;
     const data = await tmdbClient.raw(`/tv/${id}/external_ids`);

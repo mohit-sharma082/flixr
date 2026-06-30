@@ -34,6 +34,7 @@ router.get('/:id/recommendations', asyncHandler(tvCtrl.recommendations));
 router.get('/:id/similar', asyncHandler(tvCtrl.similar));
 router.get('/:id/credits', asyncHandler(tvCtrl.credits));
 router.get('/:id/videos', asyncHandler(tvCtrl.videos));
+router.get('/:id/watch-providers', asyncHandler(tvCtrl.watchProviders));
 router.get('/:id/external_ids', asyncHandler(tvCtrl.externalIds));
 router.get('/:id/season/:season_number', asyncHandler(tvCtrl.seasonDetails));
 
