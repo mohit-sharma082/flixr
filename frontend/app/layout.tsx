@@ -42,7 +42,7 @@ export default function RootLayout({
                 className={`font-sans antialiased ${font.variable} ${font.className}`}>
                 <ThemeProvider
                     attribute='class'
-                    defaultTheme='system'
+                    defaultTheme='dark'
                     enableSystem
                     disableTransitionOnChange>
                     <ReduxProvider>

@@ -38,7 +38,6 @@ export function AuthForm({ type }: AuthFormProps) {
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
-        console.log('CHANGE:', name, value);
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
@@ -169,7 +168,7 @@ export function AuthForm({ type }: AuthFormProps) {
                                 Don&apos;t have an account?{' '}
                                 <Link
                                     href='/auth/register'
-                                    className='text-blue-600 hover:underline'>
+                                    className='text-primary hover:underline'>
                                     Create one
                                 </Link>
                             </>
@@ -178,7 +177,7 @@ export function AuthForm({ type }: AuthFormProps) {
                                 Already have an account?{' '}
                                 <Link
                                     href='/auth/login'
-                                    className='text-blue-600 hover:underline'>
+                                    className='text-primary hover:underline'>
                                     Sign in
                                 </Link>
                             </>

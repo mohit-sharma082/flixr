@@ -35,12 +35,12 @@ export function ReviewComposer({
 
     if (!token) {
         return (
-            <Card className='bg-blue-50 border-blue-200'>
-                <CardContent className='pt-6'>
+            <Card className='bg-primary-foreground '>
+                <CardContent className='py-6'>
                     <p className=''>
                         <a
                             href='/auth/login'
-                            className='text-blue-600 hover:underline'>
+                            className='text-primary hover:underline'>
                             Sign in
                         </a>{' '}
                         to write a review
@@ -103,7 +103,7 @@ export function ReviewComposer({
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                <form onSubmit={handleSubmit} className='space-y-4'>
+                <form onSubmit={handleSubmit} className='space-y-4 w-fit'>
                     <div className='space-y-2'>
                         <Label htmlFor='rating'>Rating (1-10)</Label>
                         <div className='flex items-center gap-4'>

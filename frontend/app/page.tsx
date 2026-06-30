@@ -69,7 +69,17 @@ export default async function HomePage() {
     const response = await getTrendingItems();
     // console.log('GOT :', response);
     if (!response) {
-        return <main className='min-h-screen '>Error loading data</main>;
+        return (
+            <main className='min-h-screen bg-black flex flex-col items-center justify-center gap-3 px-6 text-center text-white'>
+                <h1 className='text-2xl font-semibold'>
+                    Couldn&apos;t load Flixr right now
+                </h1>
+                <p className='max-w-md text-white/60'>
+                    We had trouble reaching the catalog. Please refresh in a
+                    moment.
+                </p>
+            </main>
+        );
     }
 
     const { movies, tv: shows, genres } = response;
@@ -89,13 +99,15 @@ export default async function HomePage() {
             <GenreRow title='Browse Movies by Genre' genres={genres.movies} basePath='/movie' />
 
             <section className='px-4 sm:px-6 lg:px-8 pt-6'>
-                <h2 className='text-xl font-semibold'>Movies - Now Playing</h2>
+                <h2 className='text-2xl font-semibold mb-4'>
+                    Movies - Now Playing
+                </h2>
 
-                <div className='flex items-stretch gap-4 overflow-x-scroll snap-x snap-mandatory'>
+                <div className='flex items-stretch gap-4 overflow-x-auto snap-x snap-mandatory'>
                     {movies?.nowPlaying?.map((item) => (
                         <MovieCard key={item.id} movie={item} index={0} />
                     ))}
-                    <div className='w-20 p-8 bg-transparent h-full min-h-1/2'></div>
+                    <div className='w-8 shrink-0' />
                 </div>
             </section>
 

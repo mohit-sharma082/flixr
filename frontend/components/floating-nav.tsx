@@ -163,7 +163,7 @@ export function FloatingNavFAB() {
                             Logout
                         </motion.button>
                     )}
-                    {open && token && (
+                    {/* {open && token && (
                         <motion.div
                             key='account'
                             className={cn(
@@ -179,7 +179,7 @@ export function FloatingNavFAB() {
                                 {user?.name || user?.email || 'Account'}
                             </span>
                         </motion.div>
-                    )}
+                    )} */}
                     {open && (
                         <motion.button
                             key='search'
