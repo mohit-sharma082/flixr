@@ -52,7 +52,7 @@ export function DetailHero({
     return (
         <section className='relative min-h-[78vh] w-full overflow-hidden'>
             {/* Backdrop + legibility overlays */}
-            <div className='absolute inset-0 -z-10'>
+            <div className='absolute inset-0 z-0'>
                 {backdrop ? (
                     <Image
                         src={backdrop}
