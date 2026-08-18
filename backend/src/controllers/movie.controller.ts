@@ -98,7 +98,10 @@ export const genres = async (_req: Request, res: Response) => {
 
 export const details = async (req: Request, res: Response) => {
     const id = req.params.id as string;
-    if (!id) return res.status(400).json({ error: 'Missing movie id' });
+    // TMDB ids are numeric; reject junk here instead of forwarding it upstream.
+    if (!/^\d+$/.test(id ?? ''))
+        return res.status(400).json({ error: 'Invalid movie id' });
+
     const append =
         (req.query.append as string) ||
         'credits,videos,images,recommendations,similar,keywords,external_ids,release_dates';
@@ -108,8 +111,14 @@ export const details = async (req: Request, res: Response) => {
         tmdbClient.raw(ROUTES.reviews(id), { page: 1 }),
     ]);
 
+    // The movie is the page; if TMDB can't give it to us, say 404 rather than
+    // returning 200 with a null body (which reads as success to every client).
+    if (movie.status !== 'fulfilled')
+        return res.status(404).json({ error: 'Movie not found' });
+
+    // Reviews are supplementary — a failure there degrades, it doesn't 404.
     return res.json({
-        movie: movie.status === 'fulfilled' ? movie.value : null,
+        movie: movie.value,
         reviews: reviews.status === 'fulfilled' ? reviews.value : null,
     });
 };

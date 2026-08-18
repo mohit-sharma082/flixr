@@ -11,7 +11,7 @@ const CompactList = nextDynamic(
         loading: () => (
             <div className='h-20 w-full animate-pulse'>Loading...</div>
         ),
-    }
+    },
 );
 const NumberedList = nextDynamic(
     () => import('@/components/lists').then((mod) => mod.NumberedList),
@@ -19,7 +19,7 @@ const NumberedList = nextDynamic(
         loading: () => (
             <div className='h-20 w-full animate-pulse'>Loading...</div>
         ),
-    }
+    },
 );
 
 // Render on demand: this page shows live backend data, so it must not be
@@ -83,7 +83,6 @@ export default async function HomePage() {
     }
 
     const { movies, tv: shows, genres } = response;
-    
 
     return (
         <main className='min-h-screen bg-black'>
@@ -95,8 +94,6 @@ export default async function HomePage() {
                     maxItems={12}
                 />
             </div>
-
-            <GenreRow title='Browse Movies by Genre' genres={genres.movies} basePath='/movie' />
 
             <section className='px-4 sm:px-6 lg:px-8 pt-6'>
                 <h2 className='text-2xl font-semibold mb-4'>
@@ -111,11 +108,20 @@ export default async function HomePage() {
                 </div>
             </section>
 
+            <GenreRow
+                title='Browse Movies by Genre'
+                genres={genres.movies}
+                basePath='/movie'
+            />
+
             <NumberedList title='Most Popular TV Shows' items={shows.popular} />
-
-            <GenreRow title='Browse TV by Genre' genres={genres.tv} basePath='/tv' />
-
             <NumberedList title='Most Popular Movies' items={movies.popular} />
+            <GenreRow
+                title='Browse TV by Genre'
+                genres={genres.tv}
+                basePath='/tv'
+            />
+
             <NumberedList title='Upcoming Movies' items={movies.upcoming} />
 
             <CompactList title='Shows - On The Air' items={shows.onTheAir} />

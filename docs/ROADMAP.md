@@ -55,6 +55,51 @@ reference [AUDIT.md](./AUDIT.md).
 > httpOnly cookies, `next/image` for hero/logos, test + CI spine. On deploy, force a clean
 > `.next` rebuild so stale compiled chunks don't ship the removed player.
 
+> **Status — 2026-08-18: stabilisation pass + first runtime verification.** Everything below
+> was exercised against live Mongo + Redis + TMDB (the audit's largest "honest gap" — no prior
+> finding had ever been run). The community loop is now *runtime-proven*: register → auth →
+> POST /api/reviews → public list → /mine all verified end-to-end, with 401s on missing/forged
+> tokens and a 400 on the old broken payload shape.
+>
+> **Correctness fixed:** TMDB adult filter used the wrong param name (`adult` instead of
+> `include_adult`) so it had always been a silent no-op · movie/TV `details` returned **200 with
+> a null body** for unknown or non-numeric ids, which every client read as success — now 400/404
+> · `notFound()` on the detail routes rendered a **completely blank page**, because
+> `app/{movie,tv}/[id]/layout.tsx` wrapped the page in a `<Suspense>` duplicating what the
+> sibling `loading.tsx` already does; removed the redundant layouts and added segment-level
+> `not-found.tsx` boundaries · keyword chips linked to `?with_keywords=`, which both discover
+> pages dropped from their forward-list, so the filter silently did nothing · the "Part of a
+> Collection" card linked to `/movie?collection=`, a route and param that don't exist — now a
+> static banner · `getReviewsForTmdb` 500'd on a non-numeric id (Mongoose cast error) · the
+> error handler could crash on an out-of-range upstream status · unguarded
+> `movie.vote_average.toFixed()`.
+>
+> **Deployment hardening (for the Docker/home-server target):** `trust proxy` is now env-driven
+> (`TRUST_PROXY`) — without it every visitor behind a reverse proxy shares one rate-limit bucket
+> · `/health` is exempt from the limiter (a 429 there reads as "unhealthy" and restarts a fine
+> container) · the global limit is configurable (`RATE_LIMIT_MAX`, default 200) · `/health` also
+> reports Redis · the profile page fired up to 40 parallel hydration requests on load and
+> self-429'd; now a 4-worker pool · auth reads the boot-validated `config.jwtSecret` instead of
+> a raw `process.env` read · TMDB request logging is dev-only and errors log status, not the
+> axios object (whose `config.params` carries the api_key) · `next-env.d.ts` untracked (dev and
+> build write different contents — it was a permanent phantom diff).
+>
+> **Verified live:** rate limit trips at exactly `RATE_LIMIT_MAX+1`; `/health` still 200 after;
+> `TRUST_PROXY=1` gives forwarded clients their own bucket; page clamp returns 500 for
+> `page=99999`; `append_to_response` allowlist drops unknown values; `with_keywords` genuinely
+> narrows discover (62 pages vs 58,513). Both apps `tsc` + build clean.
+>
+> **Known limitation (not a regression):** the detail 404s render the right page and emit
+> `<meta name="robots" content="noindex">`, but the HTTP status stays 200 — `loading.tsx` opens
+> a streaming boundary and the shell is flushed before the page resolves. Removing `loading.tsx`
+> would fix the status at the cost of the navigation skeleton; not worth the trade.
+>
+> **Left as-is by decision:** the three parallel detail-page implementations (`movies/`,
+> `movies/spotlight/`, `movies/legacy/` and the TV equivalents, plus the orphaned
+> `components/details/*` design system and `comments.tsx`) — ~2,500 lines imported by nothing.
+> Also still open: eslint/tests/CI (H11/H18/H19), the duplicate `components/ui/use-toast.ts`,
+> and the `docs/` + `.claude` entries in `.gitignore` that contradict those paths being tracked.
+
 - [x] **Rotate `JWT_SECRET`** — replaced the guessable phrase with `openssl rand -hex 64`
       (128 chars) in `backend/.env`. Added **fail-fast validation** in new
       `backend/src/config.ts` (`requireEnv('JWT_SECRET', {minLength: 32})` +

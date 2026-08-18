@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import User from '../models/User';
+import { config } from '../config';
 
 export interface AuthRequest extends Request {
     user?: any;
@@ -19,7 +20,7 @@ export default async function auth(
 
     const token = parts[1];
     try {
-        const payload: any = jwt.verify(token, process.env.JWT_SECRET!);
+        const payload: any = jwt.verify(token, config.jwtSecret);
         const user = await User.findById(payload.id).select('-password');
         if (!user) return res.status(401).json({ error: 'User not found' });
         req.user = user;

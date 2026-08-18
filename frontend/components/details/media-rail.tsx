@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { Play } from 'lucide-react';
 import { Video } from '@/lib/interfaces';
 import { Rail } from './section';
@@ -72,13 +73,15 @@ export function MediaRail({
                                 }
                                 aria-label='View backdrop'
                                 className='w-80 shrink-0 snap-start overflow-hidden rounded-xl border border-white/10'>
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img
-                                    src={thumb}
-                                    alt=''
-                                    loading='lazy'
-                                    className='aspect-video w-full object-cover'
-                                />
+                                <div className='relative aspect-video w-full'>
+                                    <Image
+                                        src={thumb}
+                                        alt=''
+                                        fill
+                                        sizes='20rem'
+                                        className='object-cover'
+                                    />
+                                </div>
                             </button>
                         );
                     })}

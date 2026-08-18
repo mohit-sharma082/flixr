@@ -34,12 +34,19 @@ export const getMyReviews = async (req: AuthRequest, res: Response) => {
 };
 
 export const getReviewsForTmdb = async (req: Request, res: Response) => {
-    const mediaType = req.params.mediaType as 'movie' | 'tv';
+    const mediaType = req.params.mediaType as string;
     const tmdbId = req.params.tmdbId as string;
-    const reviews = await Review.find({ tmdbId: +tmdbId, mediaType }).populate(
-        'user',
-        'name email'
-    );
+
+    // Validate before hitting Mongo: an unparseable id would otherwise become a
+    // NaN cast error and surface to the client as a 500.
+    if (mediaType !== 'movie' && mediaType !== 'tv')
+        return res.status(400).json({ error: 'mediaType must be movie or tv' });
+    if (!/^\d+$/.test(tmdbId ?? ''))
+        return res.status(400).json({ error: 'Invalid tmdbId' });
+
+    const reviews = await Review.find({ tmdbId: +tmdbId, mediaType })
+        .sort({ createdAt: -1 })
+        .populate('user', 'name email');
     res.json(reviews);
 };
 

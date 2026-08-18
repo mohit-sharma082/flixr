@@ -6,11 +6,10 @@ import { store } from '../store';
 export const API_PREFIX = '/api';
 
 export const ROUTES = {
-    // Auth
+    // Auth (the backend implements /register and /login only — there is no /me)
     auth: {
         login: `${API_PREFIX}/auth/login`,
         register: `${API_PREFIX}/auth/register`,
-        me: `${API_PREFIX}/auth/me`,
     },
 
     // Movies
@@ -47,11 +46,10 @@ export const ROUTES = {
 
     // Reviews & Comments
     reviews: {
-        crud: `${API_PREFIX}/reviews`, // POST, GET (list), PUT, DELETE depending on body/params
-        byTmdbMovie: (id: number | string) =>
-            `${API_PREFIX}/reviews/tmdb/movie/${id}`,
-        byUser: (userId: string) =>
-            `${API_PREFIX}/reviews?userId=${encodeURIComponent(userId)}`,
+        crud: `${API_PREFIX}/reviews`, // POST, PUT, DELETE
+        byTmdb: (mediaType: 'movie' | 'tv', id: number | string) =>
+            `${API_PREFIX}/reviews/tmdb/${mediaType}/${id}`,
+        mine: `${API_PREFIX}/reviews/mine`,
     },
 
     comments: {

@@ -52,7 +52,7 @@ export function Rail({
     children: ReactNode;
 }) {
     return (
-        <section id={id} className='scroll-mt-20 py-6'>
+        <section id={id} className='scroll-mt-20 py-6 '>
             <div className='px-4 sm:px-6 lg:px-8'>
                 <SectionHeading title={title} action={action} />
             </div>

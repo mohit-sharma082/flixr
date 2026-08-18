@@ -157,7 +157,7 @@ export default function WhereToWatch({ mediaType, id }: WhereToWatchProps) {
                     <Tv className='h-5 w-5 text-primary' aria-hidden='true' />
                     <h3
                         id='where-to-watch-heading'
-                        className='text-xl font-semibold'>
+                        className='text-2xl font-semibold'>
                         Where to Watch
                     </h3>
                 </div>

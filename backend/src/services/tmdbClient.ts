@@ -4,6 +4,7 @@ import { redisClient } from '../cache/redisClient';
 const TMDB_API_KEY = process.env.TMDB_API_KEY!;
 const TMDB_BASE = process.env.TMDB_BASE || 'https://api.themoviedb.org/3';
 const CACHE_TTL = +(process.env.CACHE_TTL_SECONDS || 3600); // default 1 hour
+const IS_PROD = process.env.NODE_ENV === 'production';
 
 type QueryParams = Record<string, any>;
 
@@ -220,11 +221,13 @@ export class TMDBClient {
             const fullParams = {
                 ...params,
                 api_key: this.apiKey,
-                adult: false,
+                // TMDB's parameter is `include_adult` — a bare `adult` key is
+                // silently ignored upstream, so this filter was a no-op before.
+                include_adult: false,
             };
 
             const url = `${this.baseUrl}${pathRoute}`;
-            console.log('TMDB Request URL: ', url, params);
+            if (!IS_PROD) console.log('TMDB Request URL: ', url, params);
             const resp = await axios.get(url, {
                 params: fullParams,
                 timeout: 20000,
@@ -232,7 +235,13 @@ export class TMDBClient {
 
             return resp.data;
         } catch (error: any) {
-            console.log('TMDB request error: ', { error });
+            // Log the shape, not the object: an axios error carries `config`,
+            // whose params include the TMDB api_key.
+            console.error(
+                'TMDB request failed:',
+                pathRoute,
+                error?.response?.status ?? error?.code ?? error?.message
+            );
             throw error;
         }
     }
@@ -270,7 +279,6 @@ export class TMDBClient {
     // Expose a direct request in case controller needs a specific endpoint
     async raw(path: string, params: QueryParams = {}, ttlSeconds?: number) {
         try {
-            console.log('TMDB Raw Request Path: ', path, params);
             const key = this.cacheKey(`raw:${path}:${JSON.stringify(params)}`);
 
             return this.getCached(
@@ -278,8 +286,12 @@ export class TMDBClient {
                 () => this.request(path, params),
                 ttlSeconds,
             );
-        } catch (error) {
-            console.log('TMDB raw request error: ', error);
+        } catch (error: any) {
+            console.error(
+                'TMDB raw request failed:',
+                path,
+                error?.response?.status ?? error?.code ?? error?.message
+            );
             throw error;
         }
     }

@@ -22,8 +22,15 @@ const errorHandler = (err: unknown, req: Request, res: Response, next: NextFunct
 
     // axios errors carry the upstream status on response.status (so a TMDB 404 stays a 404,
     // not a 500); fall back to err.status/statusCode, then 500.
-    const statusCode =
+    const rawStatus =
         error?.response?.status || error?.status || error?.statusCode || 500;
+
+    // res.status() throws on anything outside the HTTP range, which would turn a
+    // handled error into an unhandled crash. Anything odd becomes a plain 500.
+    const statusCode =
+        Number.isInteger(rawStatus) && rawStatus >= 400 && rawStatus <= 599
+            ? rawStatus
+            : 500;
 
     // Never leak internal/axios error text to clients on 5xx; pass client-error (4xx) messages through.
     const message =

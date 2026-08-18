@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Genre, Video } from '@/lib/interfaces';
 import { cn, getRatingColor, tmdbImg } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
 import { TrailerButton } from './trailer-button';
 
 export interface DetailHeroProps {
@@ -34,6 +35,7 @@ export function DetailHero({
 }: DetailHeroProps) {
     const backdrop = tmdbImg(backdropPath, 'original');
     const poster = tmdbImg(posterPath, 'w500');
+    const { toast } = useToast();
 
     const goBack = () => {
         if (typeof window !== 'undefined' && window.history.length > 1)
@@ -45,15 +47,28 @@ export function DetailHero({
         const url = typeof window !== 'undefined' ? window.location.href : '';
         if (typeof navigator !== 'undefined' && navigator.share)
             navigator.share({ title, url }).catch(() => {});
-        else if (typeof navigator !== 'undefined')
+        else if (typeof navigator !== 'undefined') {
             navigator.clipboard?.writeText(url);
+            toast({
+                title: 'Link copied',
+                description: 'Page link copied to your clipboard.',
+            });
+        }
     };
 
     return (
-        <section className='relative min-h-[78vh] w-full overflow-hidden'>
+        <section className='relative md:min-h-[78vh] w-full overflow-hidden'>
             {/* Backdrop + legibility overlays */}
-            <div className='absolute inset-0 z-0'>
-                {backdrop ? (
+            <div
+                className='absolute inset-0 z-0'
+                style={{
+                    backgroundImage: backdrop ? `url(${backdrop})` : undefined,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    backgroundRepeat: 'no-repeat',
+                    backgroundAttachment: 'fixed',
+                }}>
+                {/* {backdrop ? (
                     <Image
                         src={backdrop}
                         alt=''
@@ -64,10 +79,10 @@ export function DetailHero({
                     />
                 ) : (
                     <div className='h-full w-full bg-gradient-to-b from-muted to-background' />
-                )}
-                <div className='absolute inset-0 bg-black/40' />
-                <div className='absolute inset-0 bg-gradient-to-t from-background via-background/70 to-transparent' />
-                <div className='absolute inset-0 bg-gradient-to-r from-background/80 via-transparent to-transparent' />
+                )} */}
+                {/* <div className='absolute inset-0 bg-black/40' /> */}
+                <div className='absolute inset-0 bg-gradient-to-t from-background to-transparent' />
+                {/* <div className='absolute inset-0 bg-gradient-to-r from-background/80 via-transparent to-transparent' /> */}
             </div>
 
             {/* Back */}
@@ -83,7 +98,7 @@ export function DetailHero({
             </div>
 
             {/* Content */}
-            <div className='relative z-[1] mx-auto flex h-full min-h-[78vh] max-w-7xl flex-col justify-end gap-6 px-4 pb-10 pt-24 sm:px-6 sm:pb-14 lg:flex-row lg:items-end lg:px-8'>
+            <div className='relative z-[1] mx-auto flex h-full md:min-h-[78vh] max-w-7xl flex-col justify-end gap-6 px-4 pb-10 pt-24 sm:px-6 sm:pb-14 lg:flex-row lg:items-end lg:px-8'>
                 {/* Poster — smaller on mobile, never hidden (DESIGN.md §9) */}
                 <div className='w-28 shrink-0 overflow-hidden rounded-xl border border-white/10 shadow-2xl sm:w-48 lg:w-60'>
                     <div className='relative aspect-2/3 bg-muted'>
@@ -131,7 +146,7 @@ export function DetailHero({
                                 <Star
                                     className={cn(
                                         'h-4 w-4 fill-current',
-                                        getRatingColor(rating)
+                                        getRatingColor(rating),
                                     )}
                                     aria-hidden='true'
                                 />

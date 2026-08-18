@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import Joi from 'joi';
 import User from '../models/User';
+import { config } from '../config';
 
 const registerSchema = Joi.object({
     email: Joi.string().email().required(),
@@ -15,6 +16,14 @@ const loginSchema = Joi.object({
     password: Joi.string().required(),
     name: Joi.string().allow('', null).optional(),
 });
+
+// Single place that mints tokens, using the boot-validated secret rather than a
+// raw process.env read (which could be undefined and silently sign nothing).
+function signToken(userId: string): string {
+    return jwt.sign({ id: userId }, config.jwtSecret, {
+        expiresIn: config.jwtExpiresIn,
+    } as jwt.SignOptions);
+}
 
 export const register = async (req: Request, res: Response) => {
     const { error, value } = registerSchema.validate(req.body);
@@ -29,13 +38,7 @@ export const register = async (req: Request, res: Response) => {
     const user = new User({ email, password: hashed, name });
     await user.save();
 
-    const token = (jwt as any)?.sign(
-        { id: user._id },
-        process.env.JWT_SECRET as string,
-        {
-            expiresIn: process.env.JWT_EXPIRES_IN || '7d',
-        }
-    );
+    const token = signToken(String(user._id));
     res.json({
         token,
         user: { id: user._id, email: user.email, name: user.name },
@@ -53,13 +56,7 @@ export const login = async (req: Request, res: Response) => {
     const ok = await bcrypt.compare(password, user.password);
     if (!ok) return res.status(401).json({ error: 'Invalid credentials' });
 
-    const token = (jwt as any)?.sign(
-        { id: user._id },
-        process.env.JWT_SECRET!,
-        {
-            expiresIn: process.env.JWT_EXPIRES_IN || '7d',
-        }
-    );
+    const token = signToken(String(user._id));
     res.json({
         token,
         user: { id: user._id, email: user.email, name: user.name },

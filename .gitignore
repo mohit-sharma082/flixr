@@ -178,3 +178,7 @@ pnpm-debug.log*
 !/temp/README.md
 
 docs/
+
+# Next.js regenerates this on every `dev`/`build`, and dev and build write
+# different contents — tracking it produces a permanent phantom diff.
+next-env.d.ts

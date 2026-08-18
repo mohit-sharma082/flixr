@@ -4,7 +4,7 @@ import { lazy, Suspense, useState } from 'react';
 import Link from 'next/link';
 import { Credits } from '@/lib/interfaces';
 import { Rail } from './section';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -30,6 +30,20 @@ export function CastRail({ credits }: { credits?: Credits }) {
     const cast = credits?.cast ?? [];
     if (!cast.length) return null;
     const top = cast.slice(0, 20);
+    // Get profile image URL
+    const getProfileUrl = (path: string | null) => {
+        return path ? `https://image.tmdb.org/t/p/w185${path}` : null;
+    };
+
+    // Get initials from name
+    const getInitials = (name: string) => {
+        return name
+            .split(' ')
+            .map((part) => part[0])
+            .join('')
+            .substring(0, 2)
+            .toUpperCase();
+    };
 
     return (
         <>
@@ -49,8 +63,8 @@ export function CastRail({ credits }: { credits?: Credits }) {
                         <Link
                             key={p.credit_id ?? p.id}
                             href={`/person/${p.id}`}
-                            className='w-32 shrink-0 snap-start'>
-                            <div className='overflow-hidden rounded-xl border border-white/10 bg-background/30 backdrop-blur-sm transition-all duration-200 hover:border-white/20'>
+                            className='w-28 md:w-44 shrink-0 snap-start'>
+                            {/* <div className='overflow-hidden rounded-xl border border-white/10 bg-background/30 backdrop-blur-sm transition-all duration-200 hover:border-white/20'>
                                 <div className='relative aspect-2/3 bg-muted'>
                                     {img ? (
                                         // eslint-disable-next-line @next/next/no-img-element
@@ -78,6 +92,35 @@ export function CastRail({ credits }: { credits?: Credits }) {
                                         {p.character}
                                     </p>
                                 </div>
+                            </div> */}
+                            <div className='w-28 md:w-44 space-y-3'>
+                                <div className='overflow-hidden rounded-md'>
+                                    <Avatar className='w-28 h-28 md:w-44 md:h-44 rounded-md'>
+                                        {p.profile_path ? (
+                                            <AvatarImage
+                                                src={
+                                                    getProfileUrl(
+                                                        p.profile_path,
+                                                    ) || ''
+                                                }
+                                                alt={p.name}
+                                                className='object-cover'
+                                            />
+                                        ) : (
+                                            <AvatarFallback className='bg-muted text-4xl'>
+                                                {getInitials(p.name)}
+                                            </AvatarFallback>
+                                        )}
+                                    </Avatar>
+                                </div>
+                                <div className='space-y-1 text-sm'>
+                                    <h3 className='font-medium leading-none'>
+                                        {p.name}
+                                    </h3>
+                                    <p className='text-xs text-muted-foreground line-clamp-2'>
+                                        {p.character}
+                                    </p>
+                                </div>
                             </div>
                         </Link>
                     );
@@ -85,7 +128,7 @@ export function CastRail({ credits }: { credits?: Credits }) {
             </Rail>
 
             <Dialog open={open} onOpenChange={setOpen}>
-                <DialogContent className='max-h-[85vh] max-w-4xl overflow-y-auto border-white/10'>
+                <DialogContent className='max-h-[85vh] md:max-w-none md:w-[70vw] overflow-y-auto border-white/10'>
                     <DialogHeader>
                         <DialogTitle>Full cast &amp; crew</DialogTitle>
                     </DialogHeader>

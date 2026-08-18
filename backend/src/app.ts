@@ -20,6 +20,12 @@ import errorHandler from './utils/error_handler';
 
 const app = express();
 
+// Behind a reverse proxy / Docker network, req.ip is the proxy unless we opt in.
+// Rate limiting is keyed by IP, so getting this wrong either collapses every
+// visitor into one bucket (unset) or lets them spoof their way out of it (blind
+// `true`). Driven by TRUST_PROXY; defaults to false for direct exposure.
+app.set('trust proxy', config.trustProxy);
+
 app.use(helmet());
 
 // CORS: enforce the CORS_ORIGINS allowlist in production; in dev, also allow any
@@ -66,10 +72,13 @@ app.use((req, res, next) => {
 
 const generalLimiter = rateLimit({
     windowMs: 60 * 1000,
-    max: 100,
+    max: config.rateLimitMax,
     message: { error: true, message: 'Too many requests, please try again later.', statusCode: 429 },
     standardHeaders: true,
     legacyHeaders: false,
+    // Container/orchestrator probes must never be throttled — a 429 on /health
+    // reads as "unhealthy" and would restart a perfectly fine instance.
+    skip: (req) => req.path === '/health',
 });
 
 const searchLimiter = rateLimit({
@@ -98,8 +107,7 @@ app.use((req, res, next) => {
 
 // Mongo is connected in server.ts (and gates app.listen). Redis connects lazily below.
 
-// Redis connect
-const REDIS_HOST = process.env.REDIS_HOST || '127:0.0.1';
+// Redis connects lazily on first command; surface its state in the logs.
 redisClient.on('connect', () => console.log('Redis client connected'));
 redisClient.on('error', (err) => console.error('Redis error', err));
 
@@ -123,9 +131,12 @@ app.get('/', (req, res) =>
 // Readiness/liveness probe: 200 only when MongoDB is connected.
 app.get('/health', (req, res) => {
     const dbConnected = mongoose.connection.readyState === 1; // 1 = connected
+    // Redis is a cache, not a dependency: a cold cache degrades latency, not
+    // correctness, so its state is reported but does not fail the probe.
     res.status(dbConnected ? 200 : 503).json({
         ok: dbConnected,
         db: dbConnected ? 'connected' : 'disconnected',
+        cache: redisClient.status === 'ready' ? 'connected' : redisClient.status,
         uptime: process.uptime(),
     });
 });

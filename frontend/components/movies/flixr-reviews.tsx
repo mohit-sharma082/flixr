@@ -2,17 +2,11 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { createApi } from '@/lib/api';
-import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { Star, Calendar, MessageSquare, AlertTriangle } from 'lucide-react';
+import { MessageSquare, AlertTriangle } from 'lucide-react';
 import { ReviewComposer } from '@/components/review-composer';
+import { ReviewCard, type ReviewCardData } from '@/components/reviews/review-card';
 
 interface FlixrReviewsProps {
     tmdbId: number;
@@ -27,25 +21,6 @@ interface FlixrReview {
     createdAt: string;
     mediaType: string;
     tmdbId: number;
-}
-
-function getInitials(str: string) {
-    return str
-        .split(' ')
-        .map((w) => w[0])
-        .join('')
-        .substring(0, 2)
-        .toUpperCase();
-}
-
-function formatDate(value: string) {
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return '';
-    return date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-    });
 }
 
 export default function FlixrReviews({
@@ -86,7 +61,7 @@ export default function FlixrReviews({
                 <MessageSquare className='h-6 w-6 text-primary' />
                 <h2
                     id='flixr-community-reviews-heading'
-                    className='text-2xl font-bold'>
+                    className='text-2xl font-semibold'>
                     Flixr Community Reviews
                 </h2>
                 {!loading && !error && reviews.length > 0 && (
@@ -127,52 +102,19 @@ export default function FlixrReviews({
             )}
 
             {!loading && !error && reviews.length > 0 && (
-                <div className='grid gap-4 items-start md:grid-cols-[repeat(auto-fill,minmax(600px,1fr))]'>
+                <div className='grid items-start gap-4 sm:grid-cols-2'>
                     {reviews.map((review) => {
-                        const reviewer =
-                            review.user?.name ||
-                            review.user?.email ||
-                            'Anonymous';
-                        const date = formatDate(review.createdAt);
-                        return (
-                            <Card key={review._id}>
-                                <CardHeader className='flex items-center gap-4'>
-                                    <Avatar className='h-12 w-12'>
-                                        <AvatarFallback>
-                                            {getInitials(reviewer)}
-                                        </AvatarFallback>
-                                    </Avatar>
-                                    <div className='flex flex-col min-w-0'>
-                                        <CardTitle className='text-base truncate'>
-                                            {reviewer}
-                                        </CardTitle>
-                                        {date && (
-                                            <span className='flex items-center gap-1 text-xs text-muted-foreground'>
-                                                <Calendar className='h-3 w-3' />
-                                                {date}
-                                            </span>
-                                        )}
-                                    </div>
-                                    <div className='ms-auto'>
-                                        <Badge
-                                            className='flex items-center gap-1 bg-yellow-600 text-white'
-                                            aria-label={`Rated ${review.rating} out of 10`}>
-                                            <Star
-                                                className='h-3 w-3 fill-current'
-                                                aria-hidden='true'
-                                            />
-                                            {review.rating}/10
-                                        </Badge>
-                                    </div>
-                                </CardHeader>
-                                <Separator />
-                                <CardContent>
-                                    <p className='text-sm text-muted-foreground whitespace-pre-line break-words'>
-                                        {review.content}
-                                    </p>
-                                </CardContent>
-                            </Card>
-                        );
+                        const card: ReviewCardData = {
+                            id: review._id,
+                            author:
+                                review.user?.name ||
+                                review.user?.email ||
+                                'Anonymous',
+                            rating: review.rating,
+                            content: review.content,
+                            date: review.createdAt,
+                        };
+                        return <ReviewCard key={review._id} review={card} />;
                     })}
                 </div>
             )}

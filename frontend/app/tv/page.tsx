@@ -13,6 +13,7 @@ const FORWARD_KEYS = [
     'vote_average.gte', 'vote_average.lte', 'vote_count.gte',
     'with_runtime.gte', 'with_runtime.lte',
     'first_air_date_year', 'first_air_date.gte', 'first_air_date.lte',
+    'with_keywords',
     'with_status', 'with_type',
     'page',
 ];

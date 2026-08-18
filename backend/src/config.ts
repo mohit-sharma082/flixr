@@ -18,6 +18,24 @@ function requireEnv(name: string, opts: { minLength?: number } = {}): string {
     return value;
 }
 
+/**
+ * `trust proxy` value for Express. Behind Docker/nginx/Caddy the client IP is in
+ * X-Forwarded-For, and without this every request looks like it comes from the
+ * proxy — which would collapse per-IP rate limiting into one shared bucket.
+ * Trusting blindly is the opposite risk (clients can spoof the header and evade
+ * limits), so this is opt-in and hop-counted:
+ *   unset/0 -> false (direct exposure)   1 -> one proxy in front   'loopback' etc. passed through
+ */
+function parseTrustProxy(raw: string | undefined): boolean | number | string {
+    if (!raw || raw.trim() === '') return false;
+    const v = raw.trim();
+    if (v === 'false') return false;
+    if (v === 'true') return 1;
+    const n = Number(v);
+    if (Number.isInteger(n) && n >= 0) return n === 0 ? false : n;
+    return v; // named value understood by Express, e.g. 'loopback'
+}
+
 function parseOrigins(raw: string | undefined): string[] | undefined {
     if (!raw || raw.trim() === '') return undefined;
     return raw
@@ -50,4 +68,11 @@ export const config = {
 
     // Comma-separated allowlist of browser origins. Empty => dev default below.
     corsOrigins: parseOrigins(process.env.CORS_ORIGINS) || ['http://localhost:3000'],
+
+    // Number of reverse-proxy hops to trust for client IP (see parseTrustProxy).
+    trustProxy: parseTrustProxy(process.env.TRUST_PROXY),
+
+    // Global per-IP request budget per minute. A single detail page fans out to
+    // several client-side calls, so this needs headroom over a naive "1 req = 1 view".
+    rateLimitMax: +(process.env.RATE_LIMIT_MAX || 200),
 };

@@ -14,7 +14,7 @@ export function GenreRow({ title, genres, basePath }: GenreRowProps) {
     return (
         <section className='px-4 sm:px-6 lg:px-8 py-6 '>
             <h2 className='text-2xl font-semibold mb-4'>{title}</h2>
-            <div className='flex gap-2 flex-wrap pb-2'>
+            <div className='flex gap-2 overflow-x-scroll md:flex-wrap pb-2'>
                 {genres.map((genre) => {
                     return (
                         <Link

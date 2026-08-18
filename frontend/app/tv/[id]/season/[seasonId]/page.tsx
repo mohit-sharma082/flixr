@@ -11,7 +11,7 @@ const SeasonDetails = React.lazy(
 );
 
 interface PageProps {
-    params: { id: string; seasonId: string };
+    params: Promise<{ id: string; seasonId: string }>;
     searchParams?: Record<string, string | string[] | undefined>;
 }
 

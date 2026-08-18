@@ -1,3 +1,4 @@
+import { notFound } from 'next/navigation';
 import { MovieDetails } from '@/components/movies/movie-details';
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
@@ -32,10 +33,10 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 export default async function MovieDetailPage({
     params,
 }: {
-    params: { id: string };
+    params: Promise<{ id: string }>;
 }) {
-    const id = (await params).id;
-    const movieId = Number.parseInt(id as string, 10);
+    const { id } = await params;
+    const movieId = Number.parseInt(id, 10);
 
     const fetchMovieDetails = async () => {
         try {
@@ -62,19 +63,15 @@ export default async function MovieDetailPage({
 
     const movieData = await fetchMovieDetails();
 
-    if (!movieData || !movieData?.movie) {
-        return (
-            <main>
-                <p className='text-center mt-20'>Movie not found.</p>
-            </main>
-        );
-    }
+    // A missing title is a 404, not a 200 with an apology paragraph — this gets
+    // the right status code, the shared not-found page, and correct SEO.
+    if (!movieData?.movie) notFound();
 
     return (
         <main>
             <MovieDetails
-                movie={movieData?.movie}
-                reviews={movieData?.reviews?.results ?? []}
+                movie={movieData.movie}
+                reviews={movieData.reviews?.results ?? []}
             />
         </main>
     );

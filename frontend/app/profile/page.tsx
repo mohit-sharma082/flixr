@@ -27,6 +27,17 @@ interface UserReview {
     createdAt: string;
 }
 
+/** Most distinct titles we'll hydrate on one profile load. */
+const HYDRATE_LIMIT = 40;
+/** Concurrent hydration requests in flight; keeps us well under the rate limit. */
+const HYDRATE_CONCURRENCY = 4;
+
+interface MediaMeta {
+    title: string;
+    poster_path: string | null;
+    year: string;
+}
+
 function getRatingColor(rating: number) {
     if (rating >= 7.5) return 'text-green-400';
     if (rating >= 6) return 'text-yellow-400';
@@ -114,57 +125,82 @@ function RatingBar({
     );
 }
 
-function ReviewCard({ review }: { review: UserReview }) {
+function ReviewCard({ review, info }: { review: UserReview; info?: MediaMeta }) {
     const isMovie = review.mediaType === 'movie';
+    const href = isMovie ? `/movie/${review.tmdbId}` : `/tv/${review.tmdbId}`;
+    const title =
+        info?.title ||
+        (isMovie ? `Movie #${review.tmdbId}` : `Show #${review.tmdbId}`);
+    const poster = info?.poster_path
+        ? `https://image.tmdb.org/t/p/w154${info.poster_path}`
+        : null;
 
-    const card = (
-        <article className='group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 hover:bg-white/8 hover:border-white/20 transition-all duration-300 p-5'>
-            <div className='flex items-start justify-between gap-4 mb-3'>
-                <h3 className='font-semibold text-base leading-snug group-hover:text-white transition-colors line-clamp-2 flex-1 text-white/90'>
-                    {isMovie ? `Movie #${review.tmdbId}` : `Title #${review.tmdbId}`}
-                </h3>
-                <div
-                    className={cn(
-                        'flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-sm font-bold shrink-0',
-                        getRatingBadgeClass(review.rating)
-                    )}>
-                    <Star className='h-3 w-3 fill-current' />
-                    <span>{review.rating}/10</span>
-                </div>
-            </div>
-
-            {review.content && (
-                <p className='text-sm text-white/50 leading-relaxed line-clamp-3 mb-4'>
-                    {review.content}
-                </p>
-            )}
-
-            <div className='flex items-center justify-between'>
-                <div className='flex items-center gap-1.5 text-xs text-white/30'>
-                    <Calendar className='h-3 w-3' />
-                    <span>
-                        {new Date(review.createdAt).toLocaleDateString(
-                            'en-US',
-                            {
-                                year: 'numeric',
-                                month: 'short',
-                                day: 'numeric',
-                            }
+    return (
+        <Link href={href}>
+            <article className='group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 hover:bg-white/8 hover:border-white/20 transition-all duration-300 p-5'>
+                <div className='flex gap-4'>
+                    <div className='relative h-24 w-16 shrink-0 overflow-hidden rounded-md bg-white/5'>
+                        {poster ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                                src={poster}
+                                alt={title}
+                                loading='lazy'
+                                className='h-full w-full object-cover'
+                            />
+                        ) : (
+                            <div className='flex h-full w-full items-center justify-center'>
+                                <Film className='h-5 w-5 text-white/20' />
+                            </div>
                         )}
-                    </span>
+                    </div>
+
+                    <div className='min-w-0 flex-1'>
+                        <div className='mb-2 flex items-start justify-between gap-4'>
+                            <div className='min-w-0'>
+                                <h3 className='line-clamp-2 text-base font-semibold leading-snug text-white/90 transition-colors group-hover:text-white'>
+                                    {title}
+                                </h3>
+                                <p className='mt-0.5 text-xs text-white/40'>
+                                    {isMovie ? 'Movie' : 'TV'}
+                                    {info?.year ? ` · ${info.year}` : ''}
+                                </p>
+                            </div>
+                            <div
+                                className={cn(
+                                    'flex shrink-0 items-center gap-1.5 rounded-lg border px-2.5 py-1 text-sm font-bold',
+                                    getRatingBadgeClass(review.rating)
+                                )}>
+                                <Star className='h-3 w-3 fill-current' />
+                                <span>{review.rating}/10</span>
+                            </div>
+                        </div>
+
+                        {review.content && (
+                            <p className='mb-3 line-clamp-2 text-sm leading-relaxed text-white/50'>
+                                {review.content}
+                            </p>
+                        )}
+
+                        <div className='flex items-center gap-1.5 text-xs text-white/30'>
+                            <Calendar className='h-3 w-3' />
+                            <span>
+                                {new Date(review.createdAt).toLocaleDateString(
+                                    'en-US',
+                                    {
+                                        year: 'numeric',
+                                        month: 'short',
+                                        day: 'numeric',
+                                    }
+                                )}
+                            </span>
+                            <ArrowRight className='ml-auto h-4 w-4 text-white/20 transition-all duration-200 group-hover:translate-x-1 group-hover:text-white/50' />
+                        </div>
+                    </div>
                 </div>
-                {isMovie && (
-                    <ArrowRight className='h-4 w-4 text-white/20 group-hover:text-white/50 group-hover:translate-x-1 transition-all duration-200' />
-                )}
-            </div>
-        </article>
+            </article>
+        </Link>
     );
-
-    if (isMovie) {
-        return <Link href={`/movie/${review.tmdbId}`}>{card}</Link>;
-    }
-
-    return card;
 }
 
 function LoadingSkeleton() {
@@ -219,6 +255,7 @@ export default function ProfilePage() {
     const token = useSelector(selectToken);
     const user = useSelector(selectCurrentUser);
     const [reviews, setReviews] = useState<UserReview[]>([]);
+    const [meta, setMeta] = useState<Record<string, MediaMeta>>({});
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -243,6 +280,64 @@ export default function ProfilePage() {
 
         fetchUserReviews();
     }, [token, router]);
+
+    // Hydrate real titles/posters per reviewed title. `append=none` sanitizes to
+    // an empty append on the backend, so we only pull the light base fields.
+    //
+    // Deliberately throttled: this is one request per distinct title, and firing
+    // them all at once would burn a large slice of the backend's per-IP rate
+    // budget on a single page load (and 429 the rest of the page). A small
+    // worker pool keeps it to a trickle, and results stream in as they land.
+    useEffect(() => {
+        if (!reviews.length) return;
+        const api = createApi();
+        const unique = Array.from(
+            new Map(
+                reviews.map((r) => [`${r.mediaType}:${r.tmdbId}`, r])
+            ).values()
+        ).slice(0, HYDRATE_LIMIT);
+        let cancelled = false;
+
+        const fetchOne = async (r: UserReview): Promise<MediaMeta | null> => {
+            const base = r.mediaType === 'tv' ? 'tv' : 'movies';
+            const res = await api.get(`/api/${base}/${r.tmdbId}?append=none`);
+            const d = r.mediaType === 'tv' ? res.data?.show : res.data?.movie;
+            if (!d) return null;
+            const date = r.mediaType === 'tv' ? d.first_air_date : d.release_date;
+            return {
+                title: (r.mediaType === 'tv' ? d.name : d.title) ?? '',
+                poster_path: d.poster_path ?? null,
+                year: date ? String(new Date(date).getFullYear()) : '',
+            };
+        };
+
+        let cursor = 0;
+        const worker = async () => {
+            while (!cancelled) {
+                const index = cursor++;
+                if (index >= unique.length) return;
+                const r = unique[index];
+                try {
+                    const m = await fetchOne(r);
+                    if (cancelled || !m) continue;
+                    setMeta((prev) => ({
+                        ...prev,
+                        [`${r.mediaType}:${r.tmdbId}`]: m,
+                    }));
+                } catch {
+                    // A title that won't load just keeps its placeholder.
+                }
+            }
+        };
+
+        void Promise.all(
+            Array.from({ length: Math.min(HYDRATE_CONCURRENCY, unique.length) }, worker)
+        );
+
+        return () => {
+            cancelled = true;
+        };
+    }, [reviews]);
 
     const stats = useMemo(() => {
         const total = reviews.length;
@@ -422,6 +517,11 @@ export default function ProfilePage() {
                                     <ReviewCard
                                         key={review._id}
                                         review={review}
+                                        info={
+                                            meta[
+                                                `${review.mediaType}:${review.tmdbId}`
+                                            ]
+                                        }
                                     />
                                 ))}
                             </div>
