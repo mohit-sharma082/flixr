@@ -1,0 +1,107 @@
+# Flixr — self-hosted stack.
+#
+#   docker compose up -d --build     then open http://localhost:3000
+#
+# Only the frontend publishes a port. The browser talks to :3000 for both pages
+# and API calls; Next rewrites /api/* to the backend over the internal network.
+# That keeps the backend, Mongo and Redis off the host entirely and means no
+# backend address is baked into the browser bundle at build time.
+
+name: flixr
+
+services:
+  flixr-mongo:
+    container_name: flixr-mongo
+    image: mongo:8
+    restart: unless-stopped
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      # Gates the backend's startup: it exits(1) if Mongo isn't reachable.
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  flixr-redis:
+    container_name: flixr-redis
+    image: redis:8-alpine
+    restart: unless-stopped
+    # Cache only — a light RDB snapshot is enough; losing it costs a cold start.
+    command: ["redis-server", "--save", "300", "10", "--appendonly", "no"]
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  flixr-backend:
+    container_name: flixr-backend
+    build:
+      context: ./backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      PORT: "4000"
+      # Service names on the compose network, not localhost.
+      MONGO_URI: mongodb://flixr-mongo:27017/tmdbapp
+      REDIS_HOST: flixr-redis
+      REDIS_PORT: "6379"
+      # One hop: Next's /api proxy sits in front, so the client IP arrives in
+      # X-Forwarded-For. Without this every visitor shares one rate-limit bucket.
+      # That header is forgeable through this hop — see the caveat in
+      # frontend/app/api/[...path]/route.ts. Raise this only if you put real
+      # reverse proxies in front, and only by the number you actually control.
+      TRUST_PROXY: "1"
+      # Browser requests are same-origin (proxied), so they carry no Origin the
+      # backend must allow. This covers anyone calling the API directly.
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
+    depends_on:
+      flixr-mongo:
+        condition: service_healthy
+      flixr-redis:
+        condition: service_healthy
+    healthcheck:
+      # /health is 200 only once Mongo is connected, and is exempt from rate limiting.
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+  flixr-frontend:
+    container_name: flixr-frontend
+    build:
+      context: ./frontend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      # Absolute internal URL for server-rendered fetches and the /api/* rewrite.
+      # NEXT_PUBLIC_API_URL is deliberately unset — the browser uses same-origin.
+      BACKEND_INTERNAL_URL: http://flixr-backend:4000
+    ports:
+      - "${FLIXR_PORT:-3000}:3000"
+    depends_on:
+      flixr-backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 8
+      start_period: 30s
+
+volumes:
+  # Names pinned so the data survives no matter which project runs this file.
+  # Volumes are normally prefixed with the project name, and ~/projects/compose.yml
+  # includes this stack under the project "projects" — without the pin that run
+  # would create fresh empty volumes instead of reusing these.
+  mongo-data:
+    name: flixr_mongo-data
+  redis-data:
+    name: flixr_redis-data

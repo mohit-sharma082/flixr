@@ -38,7 +38,43 @@ A few things I cared about while building it:
 
 ## Running it
 
-You need Node 22, pnpm, MongoDB, Redis, and a [TMDB API key](https://www.themoviedb.org/settings/api).
+### Docker (recommended)
+
+Everything — Mongo, Redis, the API and the web app — comes up with one command.
+You need Docker with the Compose plugin and a
+[TMDB API key](https://www.themoviedb.org/settings/api).
+
+```bash
+cp .env.example .env          # then paste your TMDB_API_KEY into it
+docker compose up -d --build
+```
+
+Open <http://localhost:3000>. First build takes a few minutes; after that
+`docker compose up -d` is seconds.
+
+`.env` ships with a freshly generated `JWT_SECRET`, so the only value you have
+to supply is the TMDB key. The backend refuses to start without either and says
+which one is missing.
+
+Only port 3000 is published. The browser talks to the Next server for both
+pages and API calls — `/api/*` is proxied to the backend over the internal
+Compose network by `frontend/app/api/[...path]/route.ts` — so Mongo, Redis and
+the API are not exposed on the host, there is no CORS to configure, and no
+backend address is baked into the browser bundle. That last point matters: the
+same image runs unchanged whether you browse to `localhost`, a LAN IP, or a
+domain.
+
+```bash
+docker compose logs -f backend    # request log, cache + TMDB errors
+docker compose ps                 # health of each service
+docker compose down               # stop; add -v to also drop the data volumes
+```
+
+To publish on a different port, set `FLIXR_PORT` in `.env`.
+
+### Without Docker
+
+Node 22, pnpm, MongoDB and Redis running locally.
 
 **Backend** - http://localhost:4000
 
@@ -49,8 +85,8 @@ cp .env.example .env          # set TMDB_API_KEY and JWT_SECRET
 pnpm dev
 ```
 
-Generate the secret with `openssl rand -hex 48`. `GET /health` returns 200 once Mongo
-is connected, 503 until then.
+Generate the secret with `openssl rand -hex 48`. `GET /health` returns 200 once
+Mongo is connected, 503 until then.
 
 **Frontend** - http://localhost:3000
 
@@ -77,11 +113,15 @@ Backend (`backend/.env`) - see `.env.example` for the full list:
 | `TRUST_PROXY` | Reverse-proxy hops to trust. Rate limiting is keyed by client IP, so this matters behind nginx or Docker. |
 | `RATE_LIMIT_MAX` | Global per-IP requests per minute. Default 200. |
 
-Frontend (`frontend/.env.local`):
+Under Docker these are set in `docker-compose.yml`; the root `.env` only holds
+what Compose can't derive (the TMDB key, the JWT secret, the published port).
+
+Frontend (`frontend/.env.local`, dev only):
 
 | Variable | Notes |
 | --- | --- |
-| `NEXT_PUBLIC_API_URL` | Backend base URL. **Inlined at build time** - it has to be an address the visitor's browser can reach, not an internal Docker service name. |
+| `BACKEND_INTERNAL_URL` | Absolute backend URL for **server-side** use: RSC fetches, `generateMetadata`, and the `/api/*` proxy. Read at request time, so one image deploys anywhere. `http://backend:4000` under Compose. |
+| `NEXT_PUBLIC_API_URL` | Where the **browser** sends API calls. Leave unset: the browser then uses this same origin and the proxy forwards. Set it only to bypass the proxy — it is **inlined at build time**, so it must be an address the visitor's browser can reach, and `CORS_ORIGINS` must list this app's origin. |
 
 ## API
 
