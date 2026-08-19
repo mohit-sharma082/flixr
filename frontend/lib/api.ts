@@ -1,6 +1,7 @@
 // src/lib/api.ts
 import axios, { AxiosInstance } from 'axios';
 import { store } from '../store';
+import { CLIENT_API_BASE } from './api-base';
 
 // src/lib/endpoints.ts
 export const API_PREFIX = '/api';
@@ -71,10 +72,9 @@ export const ROUTES = {
 
 export const createApi = (baseURL?: string): AxiosInstance => {
     const api = axios.create({
-        baseURL:
-            baseURL ||
-            process.env.NEXT_PUBLIC_API_URL ||
-            'http://localhost:4000',
+        // '' means same-origin: the Next rewrite proxies /api/* to the backend,
+        // so no backend hostname is baked into the browser bundle.
+        baseURL: baseURL ?? CLIENT_API_BASE,
         timeout: 10000,
     });
 
@@ -104,11 +104,14 @@ export const createApi = (baseURL?: string): AxiosInstance => {
     return api;
 };
 
-// server-side factory: NO Redux/store access, safe to use in Server Components
+// server-side factory: NO Redux/store access, safe to use in Server Components.
+// Server code cannot use a relative baseURL, so it needs the absolute internal
+// address — see lib/api-base.server.ts for why that differs from the client's.
 export const createServerApi = (baseURL?: string): AxiosInstance => {
     const api = axios.create({
         baseURL:
             baseURL ||
+            process.env.BACKEND_INTERNAL_URL ||
             process.env.NEXT_PUBLIC_API_URL ||
             'http://localhost:4000',
         timeout: 10000,

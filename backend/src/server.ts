@@ -2,6 +2,7 @@ import { config } from './config'; // MUST be first: loads .env and validates re
 import mongoose from 'mongoose';
 import app from './app';
 import { redisClient } from './cache/redisClient';
+import { verifyTmdbCredentials } from './services/tmdbClient';
 
 async function start() {
     try {
@@ -15,6 +16,10 @@ async function start() {
     const server = app.listen(config.port, () => {
         console.log(`Server running on http://localhost:${config.port}`);
     });
+
+    // Fire-and-forget: surfaces a rejected API key in the logs without holding
+    // up the listen (or making a TMDB blip block startup).
+    void verifyTmdbCredentials();
 
     // Graceful shutdown: stop accepting new connections, drain in-flight requests,
     // then close Mongo + Redis before exiting (so rolling deploys don't drop requests).

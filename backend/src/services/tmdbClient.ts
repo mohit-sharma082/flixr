@@ -1,10 +1,14 @@
 import axios from 'axios';
 import { redisClient } from '../cache/redisClient';
+import { config } from '../config';
 
-const TMDB_API_KEY = process.env.TMDB_API_KEY!;
-const TMDB_BASE = process.env.TMDB_BASE || 'https://api.themoviedb.org/3';
-const CACHE_TTL = +(process.env.CACHE_TTL_SECONDS || 3600); // default 1 hour
-const IS_PROD = process.env.NODE_ENV === 'production';
+// Sourced from the boot-validated config rather than raw process.env: the key
+// is guaranteed present here, so the non-null assertion (and the silent
+// "requests fail at runtime" it hid) is gone.
+const TMDB_API_KEY = config.tmdbApiKey;
+const TMDB_BASE = config.tmdbBase;
+const CACHE_TTL = config.cacheTtlSeconds;
+const IS_PROD = config.isProd;
 
 type QueryParams = Record<string, any>;
 
@@ -184,13 +188,43 @@ export class TMDBClient {
         return `tmdb:${prefix}`;
     }
 
+    /**
+     * Redis is a cache, not a dependency: a read that fails (server down,
+     * still starting, connection dropped) must cost latency, not correctness.
+     * Both helpers swallow their errors so a cold Redis degrades the request
+     * to a direct TMDB fetch instead of turning it into a 500.
+     */
+    private async cacheGet(key: string): Promise<string | null> {
+        try {
+            return await redisClient.get(key);
+        } catch (err: any) {
+            console.error('Redis GET failed (serving uncached):', key, err?.message);
+            return null;
+        }
+    }
+
+    private async cacheSet(key: string, ttl: number, value: string) {
+        try {
+            await redisClient.setex(key, ttl, value);
+        } catch (err: any) {
+            console.error('Redis SETEX failed (result not cached):', key, err?.message);
+        }
+    }
+
     private async getCached<T>(
         key: string,
         fetcher: () => Promise<T>,
         ttlSeconds?: number, // for some cases we might want different TTL
     ): Promise<T> {
-        const cached = await redisClient.get(key);
-        if (cached) return JSON.parse(cached) as T;
+        const cached = await this.cacheGet(key);
+        if (cached) {
+            try {
+                return JSON.parse(cached) as T;
+            } catch {
+                // Corrupt entry — treat it as a miss rather than a 500.
+                console.error('Redis entry was not valid JSON, refetching:', key);
+            }
+        }
 
         // Coalesce concurrent misses for the same key onto one upstream fetch.
         const existing = this.inFlight.get(key);
@@ -204,7 +238,7 @@ export class TMDBClient {
                     ? 60
                     : ttlSeconds
                 : CACHE_TTL;
-            await redisClient.setex(key, ttl, JSON.stringify(result));
+            await this.cacheSet(key, ttl, JSON.stringify(result));
             return result;
         })();
 
@@ -214,6 +248,20 @@ export class TMDBClient {
         } finally {
             this.inFlight.delete(key);
         }
+    }
+
+    /**
+     * Connection-level failures only (reset, refused, DNS, timeout) — never a
+     * response TMDB actually sent. Retrying a 4xx/5xx would just repeat it, but
+     * a reset connection carried no answer at all, so trying again is safe even
+     * for the same request. This matters in practice: some ISPs intermittently
+     * reset connections to TMDB's CDN edges, and without a retry every such
+     * reset surfaces as a 500 (or an empty rail) to the user.
+     */
+    private static isTransient(error: any): boolean {
+        if (error?.response) return false;
+        return ['ECONNRESET', 'ECONNREFUSED', 'EAI_AGAIN', 'ENOTFOUND',
+                'ETIMEDOUT', 'ECONNABORTED'].includes(error?.code);
     }
 
     private async request(pathRoute: string, params: QueryParams = {}) {
@@ -228,10 +276,25 @@ export class TMDBClient {
 
             const url = `${this.baseUrl}${pathRoute}`;
             if (!IS_PROD) console.log('TMDB Request URL: ', url, params);
-            const resp = await axios.get(url, {
-                params: fullParams,
-                timeout: 20000,
-            });
+
+            const MAX_ATTEMPTS = 3;
+            let resp;
+            for (let attempt = 1; ; attempt++) {
+                try {
+                    resp = await axios.get(url, {
+                        params: fullParams,
+                        timeout: 20000,
+                    });
+                    break;
+                } catch (err: any) {
+                    if (attempt >= MAX_ATTEMPTS || !TMDBClient.isTransient(err))
+                        throw err;
+                    console.warn(
+                        `TMDB ${err.code} on ${pathRoute}, retry ${attempt}/${MAX_ATTEMPTS - 1}`
+                    );
+                    await new Promise((r) => setTimeout(r, 250 * attempt));
+                }
+            }
 
             return resp.data;
         } catch (error: any) {
@@ -301,6 +364,43 @@ export class TMDBClient {
         // naive pattern scan - in production prefer Redis SCAN with cursors and safer removal
         const keys = await redisClient.keys(keyPattern);
         if (keys.length) await redisClient.del(...keys);
+    }
+}
+
+/**
+ * One-shot credential check, run at boot.
+ *
+ * Config validation only proves TMDB_API_KEY is *present*. A wrong key still
+ * boots cleanly and then fails every upstream call — and because the composite
+ * endpoints degrade with Promise.allSettled, the symptom is a 200 with empty
+ * rows. That looks like "the app is broken" with nothing in the logs pointing
+ * at the cause, so name it explicitly here.
+ *
+ * Deliberately non-fatal: TMDB being unreachable for a moment at startup is not
+ * a reason to refuse to serve cached data and the community endpoints.
+ */
+export async function verifyTmdbCredentials(): Promise<void> {
+    try {
+        await axios.get(`${TMDB_BASE}/configuration`, {
+            params: { api_key: TMDB_API_KEY },
+            timeout: 10_000,
+        });
+        console.log('TMDB API key accepted');
+    } catch (err: any) {
+        const status = err?.response?.status;
+        if (status === 401) {
+            console.error(
+                '\n*** TMDB REJECTED THE API KEY (401) ***\n' +
+                    '    Catalogue pages will render empty until this is fixed.\n' +
+                    '    Set a valid TMDB_API_KEY (the v3 key from\n' +
+                    '    https://www.themoviedb.org/settings/api) and restart.\n'
+            );
+        } else {
+            console.warn(
+                'TMDB reachability check failed (continuing anyway):',
+                status ?? err?.code ?? err?.message
+            );
+        }
     }
 }
 

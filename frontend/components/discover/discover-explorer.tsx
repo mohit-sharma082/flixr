@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Image from 'next/image';
 import Link from 'next/link';
+import { CLIENT_API_BASE as API_BASE } from '@/lib/api-base';
 
 type MediaItem = Movie | TVShow;
 
@@ -23,7 +24,6 @@ interface Props {
     initialTotalPages: number;
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
 function useDebounce<T>(value: T, delay: number) {
     const [d, setD] = useState(value);

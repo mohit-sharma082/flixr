@@ -100,8 +100,11 @@ const authLimiter = rateLimit({
 app.use(generalLimiter);
 app.use(['/api/movies/search', '/api/tv/search', '/api/people/search', '/api/common/search'], searchLimiter);
 
+// Request log. req.ip is what the rate limiters key on, so logging it makes a
+// misconfigured `trust proxy` visible (every request showing the same proxy IP
+// means all visitors share one bucket) instead of silent.
 app.use((req, res, next) => {
-    console.log(`~ ${req.method} ${req.path}`);
+    console.log(`~ ${req.method} ${req.path} [ip=${req.ip}]`);
     next();
 });
 

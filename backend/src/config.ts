@@ -44,35 +44,58 @@ function parseOrigins(raw: string | undefined): string[] | undefined {
         .filter(Boolean);
 }
 
+function buildConfig() {
+    return {
+        port: +(process.env.PORT || 4000),
+        nodeEnv: process.env.NODE_ENV || 'development',
+        isProd: process.env.NODE_ENV === 'production',
+
+        mongoUri: process.env.MONGO_URI || 'mongodb://localhost:27017/tmdbapp',
+
+        jwtSecret: requireEnv('JWT_SECRET', { minLength: 32 }),
+        jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
+
+        tmdbApiKey: requireEnv('TMDB_API_KEY'),
+        tmdbBase: process.env.TMDB_BASE || 'https://api.themoviedb.org/3',
+        cacheTtlSeconds: +(process.env.CACHE_TTL_SECONDS || 3600),
+
+        redisHost: process.env.REDIS_HOST || '127.0.0.1',
+        redisPort: +(process.env.REDIS_PORT || 6379),
+        redisPassword: process.env.REDIS_PASSWORD || undefined,
+
+        // Comma-separated allowlist of browser origins. Empty => dev default below.
+        corsOrigins: parseOrigins(process.env.CORS_ORIGINS) || ['http://localhost:3000'],
+
+        // Number of reverse-proxy hops to trust for client IP (see parseTrustProxy).
+        trustProxy: parseTrustProxy(process.env.TRUST_PROXY),
+
+        // Global per-IP request budget per minute. A single detail page fans out to
+        // several client-side calls, so this needs headroom over a naive "1 req = 1 view".
+        rateLimitMax: +(process.env.RATE_LIMIT_MAX || 200),
+    };
+}
+
+
 /**
  * Validated, typed application config.
- * Required secrets throw at startup (fail-fast) instead of at request time.
+ *
+ * Required secrets fail at startup rather than at request time. The failure is
+ * reported as a readable instruction, not a stack trace: this throws during
+ * module load, so under `restart: unless-stopped` a raw trace would scroll past
+ * every few seconds with the actual cause buried in it.
  */
-export const config = {
-    port: +(process.env.PORT || 4000),
-    nodeEnv: process.env.NODE_ENV || 'development',
-    isProd: process.env.NODE_ENV === 'production',
+function loadConfig(): ReturnType<typeof buildConfig> {
+    try {
+        return buildConfig();
+    } catch (err: any) {
+        console.error(
+            '\n*** Flixr backend cannot start — configuration is incomplete ***\n' +
+                `    ${err?.message ?? err}\n\n` +
+                '    Set it in the environment (docker compose reads the .env file\n' +
+                '    next to docker-compose.yml) and start again.\n'
+        );
+        process.exit(1);
+    }
+}
 
-    mongoUri: process.env.MONGO_URI || 'mongodb://localhost:27017/tmdbapp',
-
-    jwtSecret: requireEnv('JWT_SECRET', { minLength: 32 }),
-    jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
-
-    tmdbApiKey: requireEnv('TMDB_API_KEY'),
-    tmdbBase: process.env.TMDB_BASE || 'https://api.themoviedb.org/3',
-    cacheTtlSeconds: +(process.env.CACHE_TTL_SECONDS || 3600),
-
-    redisHost: process.env.REDIS_HOST || '127.0.0.1',
-    redisPort: +(process.env.REDIS_PORT || 6379),
-    redisPassword: process.env.REDIS_PASSWORD || undefined,
-
-    // Comma-separated allowlist of browser origins. Empty => dev default below.
-    corsOrigins: parseOrigins(process.env.CORS_ORIGINS) || ['http://localhost:3000'],
-
-    // Number of reverse-proxy hops to trust for client IP (see parseTrustProxy).
-    trustProxy: parseTrustProxy(process.env.TRUST_PROXY),
-
-    // Global per-IP request budget per minute. A single detail page fans out to
-    // several client-side calls, so this needs headroom over a naive "1 req = 1 view".
-    rateLimitMax: +(process.env.RATE_LIMIT_MAX || 200),
-};
+export const config = loadConfig();

@@ -1,12 +1,12 @@
 import { TVShow, Genre } from '@/lib/interfaces';
 import { DiscoverExplorer } from '@/components/discover/discover-explorer';
+import { serverApiBase } from '@/lib/api-base.server';
 
 export const metadata = {
     title: 'Discover TV Shows | Flixr',
     description: 'Filter and explore TV shows by genre, rating, year, and more',
 };
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
 const FORWARD_KEYS = [
     'sort_by', 'with_genres', 'without_genres', 'with_original_language',
@@ -29,7 +29,7 @@ function toQuery(sp: Record<string, string | string[] | undefined>) {
 
 async function fetchDiscover(query: string) {
     try {
-        const res = await fetch(`${API_BASE}/api/tv/discover?${query}`, {
+        const res = await fetch(`${serverApiBase()}/api/tv/discover?${query}`, {
             next: { revalidate: 1800 },
         });
         if (!res.ok) return { results: [], total_pages: 1, page: 1 };
@@ -41,7 +41,7 @@ async function fetchDiscover(query: string) {
 
 async function fetchGenres(): Promise<Genre[]> {
     try {
-        const res = await fetch(`${API_BASE}/api/tv/genres`, {
+        const res = await fetch(`${serverApiBase()}/api/tv/genres`, {
             next: { revalidate: 86400 },
         });
         if (!res.ok) return [];

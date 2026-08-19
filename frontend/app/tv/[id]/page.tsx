@@ -3,11 +3,12 @@ import React from 'react';
 import { notFound } from 'next/navigation';
 import { TVDetails } from '@/components/tv/tv-details'; // adjust path if necessary
 import type { Review, TVShow } from '@/lib/interfaces';
+import { serverApiBase } from '@/lib/api-base.server';
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
     try {
-        const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+        const apiBase = serverApiBase();
         const res = await fetch(
             `${apiBase}/api/tv/${encodeURIComponent(id)}`
         );
@@ -41,7 +42,7 @@ async function getTVDetails(
 ): Promise<{ show: TVShow; reviews: { results: Review[] } } | null> {
     try {
         const apiBase =
-            process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+            serverApiBase();
         const res = await fetch(
             `${apiBase}/api/tv/${encodeURIComponent(id)}`,
             {

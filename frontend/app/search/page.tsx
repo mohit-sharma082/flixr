@@ -12,6 +12,7 @@ import {
     EmptyDescription,
     EmptyMedia,
 } from '@/components/ui/empty';
+import { serverApiBase } from '@/lib/api-base.server';
 
 export const metadata = {
     title: 'Search | Flixr',
@@ -34,7 +35,7 @@ async function searchMulti(
     }
     try {
         const apiUrl =
-            process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+            serverApiBase();
         const response = await fetch(
             `${apiUrl}/api/common/search?q=${encodeURIComponent(
                 query

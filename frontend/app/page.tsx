@@ -54,7 +54,7 @@ type ReponseData = {
 
 async function getTrendingItems(): Promise<ReponseData | null> {
     try {
-        const api = createServerApi(process.env.NEXT_PUBLIC_API_URL);
+        const api = createServerApi();
         const resp = await api.get('/api/common/homepage');
         const data = resp.data?.data;
         return data;

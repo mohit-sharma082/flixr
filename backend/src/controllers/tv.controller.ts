@@ -86,10 +86,19 @@ export const details = async (req: Request, res: Response) => {
         tmdbClient.raw(TMDB_ROUTES.tv.reviews(id)),
     ]);
 
-    // The show is the page; if TMDB can't give it to us, say 404 rather than
+    // The show is the page; if TMDB can't give it to us, say so rather than
     // returning 200 with a null body (which reads as success to every client).
-    if (details.status !== 'fulfilled')
-        return res.status(404).json({ error: 'Show not found' });
+    // Distinguish "no such title" from "upstream is broken": collapsing both
+    // into 404 makes a rejected API key or a TMDB outage look like a catalogue
+    // gap on every single title page.
+    if (details.status !== 'fulfilled') {
+        const status = (details.reason as any)?.response?.status;
+        if (status === 404)
+            return res.status(404).json({ error: 'Show not found' });
+        return res
+            .status(502)
+            .json({ error: 'Upstream catalogue request failed' });
+    }
 
     // Reviews are supplementary — a failure there degrades, it doesn't 404.
     return res.json({

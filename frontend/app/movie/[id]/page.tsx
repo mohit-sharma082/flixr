@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import { MovieDetails } from '@/components/movies/movie-details';
+import { serverApiBase } from '@/lib/api-base.server';
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
@@ -7,7 +8,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     if (isNaN(movieId)) return { title: 'Movie Details | Flixr' };
 
     try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+        const apiUrl = serverApiBase();
         const response = await fetch(`${apiUrl}/api/movies/${movieId}`);
         if (!response.ok) return { title: 'Movie Details | Flixr' };
         const data = await response.json();
@@ -44,7 +45,7 @@ export default async function MovieDetailPage({
                 throw new Error('Invalid movie ID');
             }
             const apiUrl =
-                process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+                serverApiBase();
             const response = await fetch(`${apiUrl}/api/movies/${movieId}`, {
                 next: { revalidate: 3600 },
             });

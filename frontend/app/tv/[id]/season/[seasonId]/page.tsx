@@ -1,6 +1,7 @@
 // app/tv/[id]/page.tsx
 import React, { Suspense } from 'react';
 import { Season } from '@/lib/interfaces';
+import { serverApiBase } from '@/lib/api-base.server';
 
 // const SeasonDetails = React.lazy(
 //     () => import('@/components/tv/season/season-details'),
@@ -21,7 +22,7 @@ async function getTvShowSeason(
 ): Promise<Season | null> {
     try {
         const apiBase =
-            process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+            serverApiBase();
         const res = await fetch(
             `${apiBase}/api/tv/${encodeURIComponent(
                 id,

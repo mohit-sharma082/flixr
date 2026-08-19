@@ -8,8 +8,8 @@ import {
     CommandDialog, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem,
 } from '@/components/ui/command';
 import { Button } from '@/components/ui/button';
+import { CLIENT_API_BASE as API_BASE } from '@/lib/api-base';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
 function useDebounce<T>(value: T, delay: number) {
     const [d, setD] = useState(value);

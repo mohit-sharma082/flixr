@@ -6,6 +6,7 @@ import { ExternalLink } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ImageItem } from '@/lib/interfaces';
 import { cn } from '@/lib/utils';
+import { serverApiBase } from '@/lib/api-base.server';
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
@@ -13,7 +14,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     if (isNaN(personId)) return { title: 'Person Details | Flixr' };
 
     try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+        const apiUrl = serverApiBase();
         const response = await fetch(`${apiUrl}/api/people/${personId}`);
         if (!response.ok) return { title: 'Person Details | Flixr' };
         const person = await response.json();
@@ -110,7 +111,7 @@ export default async function PersonPage({
                 throw new Error('Invalid person ID');
             }
             const apiUrl =
-                process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+                serverApiBase();
             const response = await fetch(`${apiUrl}/api/people/${personId}`);
             if (!response.ok) {
                 throw new Error('Failed to fetch person details');
